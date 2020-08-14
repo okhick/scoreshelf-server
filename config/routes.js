@@ -1,4 +1,5 @@
-const { Upload } = require('../services/Upload');
+const { Upload } = require('../controllers/Upload');
+const { deleteById } = require('../controllers/Delete')
 
 module.exports = function(app) {
 
@@ -19,5 +20,12 @@ module.exports = function(app) {
   
     return res.json(response);
   });
+
+  app.delete("/deleteAsset", async (req, res) => {
+    const receivedBody = req.body;
+    deleteById(receivedBody.id);
+    
+    return res.json(true);
+  })
 
 }
