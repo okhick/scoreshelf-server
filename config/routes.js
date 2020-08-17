@@ -1,4 +1,5 @@
 const { Upload } = require('../controllers/Upload');
+const { S3 } = require('../controllers/S3');
 const { deleteById } = require('../controllers/Delete')
 
 module.exports = function(app) {
@@ -15,9 +16,9 @@ module.exports = function(app) {
     for (key in receivedFiles) {
       const upload = new Upload(receivedFiles[key], receivedBody);
       const databaseRes = await upload.saveNewAsset();
-      response[databaseRes.asset_name] = {_id: databaseRes._id};
+      response[databaseRes.mongo.asset_name] = {_id: databaseRes.mongo._id};
     }
-  
+    console.log(response);
     return res.json(response);
   });
 
@@ -26,6 +27,13 @@ module.exports = function(app) {
     deleteById(receivedBody.id);
     
     return res.json(true);
-  })
+  });
+
+  app.get("/scoreshelf", async (req, res) => {
+    const scoreshelfAssets = new S3;
+    const buckets = await scoreshelfAssets.listBuckets();
+    res.json(buckets);
+  });
+
 
 }

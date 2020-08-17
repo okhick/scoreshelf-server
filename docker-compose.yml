@@ -14,6 +14,8 @@ services:
   mongoDB:
     container_name: mongo
     image: mongo:4.2-bionic
+    volumes: 
+      - ./.db/mongo:/data/db
     restart: always
     ports:
       - 27017:27017
@@ -30,3 +32,15 @@ services:
     environment:
       ME_CONFIG_MONGODB_ADMINUSERNAME: root
       ME_CONFIG_MONGODB_ADMINPASSWORD: root
+
+  s3:
+    container_name: s3
+    image: minio/minio
+    ports:
+      - 9000:9000
+    volumes:
+      - ./.db/s3/data:/data
+    environment:
+      MINIO_ACCESS_KEY: minio
+      MINIO_SECRET_KEY: minio123
+    command: server /data

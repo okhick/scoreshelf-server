@@ -1,4 +1,5 @@
 const Asset = require('../models/Asset');
+const { S3 } = require('../controllers/S3');
 
 class Upload {
   constructor(file, body) {
@@ -7,7 +8,9 @@ class Upload {
   }
   
   async saveNewAsset() {
-    const res = await this.saveNewAssetData();
+    const res = {}
+    res.mongo = await this.saveNewAssetData();
+    res.s3 = await this.saveAssetFile();
     return res
   }
 
@@ -19,6 +22,12 @@ class Upload {
     });
     const newAssetRes = await newAsset.save();
     return newAssetRes;
+  }
+
+  async saveAssetFile() {
+    const s3 = new S3();
+    const upload_res = await s3.uploadFile(this.upload.data, this.upload.name);
+    return upload_res;
   }
 }
 
