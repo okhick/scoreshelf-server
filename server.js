@@ -1,7 +1,7 @@
 const Express = require('express');
 const Mongoose = require("mongoose");
 
-const port = 3001;
+const port = 3000;
 const app = Express();
 module.exports = app;
 
@@ -23,7 +23,7 @@ function connect() {
     .on('disconnected', connect) // reconnect if disconnected
     .once('open', listen); // spin up express when connected to mongo
 
-  return Mongoose.connect("mongodb://localhost:27017/scoreshelf", {
+  return Mongoose.connect("mongodb://mongo:27017/scoreshelf", {
     keepAlive: 1,
     useNewUrlParser: true,
     useUnifiedTopology: true,
