@@ -22,7 +22,7 @@ module.exports = function(app) {
     const receivedBody = req.body;
     Promise.all(
       res.delete = receivedBody.filesToRemove.map(async (file) => {
-        const del = new Delete();
+        const del = new Delete(receivedBody);
         const deleteRes = await del.deleteAsset(file);
       })
     );

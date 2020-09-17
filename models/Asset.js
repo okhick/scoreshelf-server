@@ -3,7 +3,7 @@ const Schema = mongoose.Schema;
 
 const assetSchema = new Schema({
   sharetribe_user_id: String,
-  sharetribe_listing: String,
+  sharetribe_listing_id: String,
   asset_name: String,
   size: Number,
   date_added: { type: Date, default: Date.now },
