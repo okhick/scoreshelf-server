@@ -31,7 +31,8 @@ class Upload {
     const uploadPath = `${this.user_id}/${this.listing_id}`;
     const upload_res = await s3.uploadFile(this.upload.data, `${uploadPath}/${this.upload.name}`);
     return upload_res;
+    
   }
 }
 
-module.exports = { Upload };
+module.exports = { Upload }; 

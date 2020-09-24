@@ -4,11 +4,11 @@ const { S3 } = require('../controllers/S3');
 class Delete {
 
   async deleteAsset(fileData) {
-    let res = {};
-    res.mongo = await this.deleteAssetData(fileData.scoreshelf_id);
-    const assetPath = `${res.mongo.sharetribe_user_id}/${res.mongo.sharetribe_listing_id}/${res.mongo.asset_name}`;
-    res.s3 = await this.deleteAssetFile(assetPath);
-    return res;
+    await Promise.all([
+      this.deleteAssetData(fileData._id),
+      this.deleteAssetFile(`${fileData.sharetribe_user_id}/${fileData.sharetribe_listing_id}/${fileData.asset_name}`)
+    ]);
+    return true;
   }
 
   async deleteAssetData(id) {
@@ -24,4 +24,4 @@ class Delete {
 }
 
 
-module.exports = { Delete };
+module.exports = { Delete }; 

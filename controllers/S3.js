@@ -43,6 +43,16 @@ class S3 {
     const res_delete = await s3.deleteObject(deleteParams).promise();
     return res_delete;
   }
+
+  async getSignedUrl(asset) {
+    const s3 = this.connectToStorage();
+    const params = {
+      Bucket: this.bucket, 
+      Key: `${asset.sharetribe_user_id}/${asset.sharetribe_listing_id}/${asset.asset_name}`
+    };
+    const link = await s3.getSignedUrl('getObject', params);
+    return link;
+  }
 }
 
 module.exports = { S3 };
