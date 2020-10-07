@@ -3,14 +3,25 @@ const { Delete } = require('../controllers/Delete')
 const { S3 } = require('../controllers/S3');
 const { Get } = require('../controllers/Get'); 
 
-module.exports = function(app) {
+import { Application, Request, Response } from "express";
 
-  app.post("/uploadAsset", async (req, res) => {
+interface UploadResponse {
+  [key: string]: { _id: string }
+}
+
+interface AssetDataRequest {
+  ids: string[],
+  get_link: boolean
+}
+
+module.exports = function(app: Application) {
+
+  app.post("/uploadAsset", async (req: Request, res: Response) => {
     const receivedFiles = req.files;
     const receivedBody = req.body;
-    const response = {};
+    const response: UploadResponse = {};
     
-    for (key in receivedFiles) {
+    for (const key in receivedFiles) {
       const upload = new Upload(receivedFiles[key], receivedBody);
       const databaseRes = await upload.saveNewAsset();
       response[databaseRes.mongo.asset_name] = {_id: databaseRes.mongo._id};
@@ -19,10 +30,10 @@ module.exports = function(app) {
     return res.json(response);
   });
   
-  app.delete("/deleteAsset", async (req, res) => {
+  app.delete("/deleteAsset", async (req: Request, res: Response) => {
     const receivedBody = req.body;
     Promise.all(
-      res.delete = receivedBody.filesToRemove.map(async (file) => {
+      res.send = receivedBody.filesToRemove.map(async (file: string) => {
         const del = new Delete();
         const deleteRes = await del.deleteAsset(file);
       })
@@ -31,8 +42,8 @@ module.exports = function(app) {
     return res.json(true);
   });
 
-  app.post("/getAssetData", async (req, res) => {
-    const receivedBody = req.body;
+  app.post("/getAssetData", async (req: Request, res: Response) => {
+    const receivedBody: AssetDataRequest = req.body;
     const assetIds = receivedBody.ids;
     const getLink = receivedBody.get_link; 
     const get = new Get();
@@ -42,10 +53,10 @@ module.exports = function(app) {
   })
   
   // TESTS
-  app.get("/test", (req, res) => {
+  app.get("/test", (req: Request, res: Response) => {
     res.json("DOPE");
   });
-  app.get("/scoreshelf", async (req, res) => {
+  app.get("/scoreshelf", async (req: Request, res: Response) => {
     const scoreshelfAssets = new S3;
     const buckets = await scoreshelfAssets.listBuckets();
     res.json(buckets);

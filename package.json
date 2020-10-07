@@ -12,13 +12,13 @@
   "author": "Oliver Hickman",
   "license": "ISC",
   "dependencies": {
-    "aws-sdk": "^2.735.0",
+    "aws-sdk": "^2.768.0",
     "axios": "^0.19.2",
     "body-parser": "^1.19.0",
     "cors": "^2.8.5",
     "express": "^4.17.1",
-    "express-fileupload": "^1.1.10",
-    "mongoose": "^5.9.28"
+    "express-fileupload": "^1.2.0",
+    "mongoose": "^5.10.8"
   },
   "devDependencies": {
     "@types/cors": "^2.8.7",
