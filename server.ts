@@ -8,9 +8,9 @@ module.exports = app;
 console.log()
 
 // these export a function that takes the argument 'app'. that's what's going on here.
+// is this dependency injecting?
 // make sure to load the express before the routes otherwise things can get weird...
 require('./config/express')(app);
-// require('./config/routes')(app);
 require('./modules/assets')(app);
 
 connect();

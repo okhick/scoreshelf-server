@@ -83,7 +83,7 @@ module.exports = function(app: Application) {
   
   // TESTS
   app.get("/test", (req: Request, res: Response) => {
-    res.json("DOPE");
+    res.json("ASSET MODULE");
   });
 
 }
