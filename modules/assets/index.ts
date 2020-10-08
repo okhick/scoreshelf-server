@@ -2,22 +2,23 @@ import { AssetIO } from './controllers/asset-io';
 import { AssetDB } from './controllers/asset-db';
 
 import { Application, Request, Response } from "express";
+import { AssetDataRequest, UploadRequest, UploadResponse } from './types';
 import { UploadedFile } from 'express-fileupload';
 
-interface UploadRequest {
-  file: UploadedFile, // this is the file blob which doesn't exist in node?
-  user_id: string,
-  listing_id: string;
-}
+// interface UploadRequest {
+//   file: UploadedFile, // this is the file blob which doesn't exist in node?
+//   user_id: string,
+//   listing_id: string;
+// }
 
-interface UploadResponse {
-  [key: string]: { _id: string }
-}
+// interface UploadResponse {
+//   [key: string]: { _id: string }
+// }
 
-interface AssetDataRequest {
-  ids: string[],
-  get_link: boolean
-}
+// interface AssetDataRequest {
+//   ids: [{ scoreshelf_id: string }],
+//   get_link: boolean
+// }
 
 interface FileToRemove {
   _id: string,
@@ -43,8 +44,8 @@ module.exports = function(app: Application) {
     for (const key in receivedFiles) {
       const upload: UploadRequest = {
         file: receivedFiles[key], 
-        user_id: receivedBody.sharetribe_user_id,
-        listing_id: receivedBody.sharetribe_listing_id
+        sharetribe_user_id: receivedBody.sharetribe_user_id,
+        sharetribe_listing_id: receivedBody.sharetribe_listing_id
       };
       
       await assetIo.saveAssetFile(upload);
@@ -73,11 +74,13 @@ module.exports = function(app: Application) {
   app.post("/getAssetData", async (req: Request, res: Response) => {
     const assetDb = new AssetDB;
 
-    const receivedBody: AssetDataRequest = req.body;
-    const assetIds = receivedBody.ids;
-    const getLink = receivedBody.get_link; 
+    const receivedBody = req.body;
+    const dataRequest: AssetDataRequest = {
+      ids: receivedBody.ids,
+      getLink: receivedBody.get_link
+    }
 
-    let assetData = await assetDb.getAssetData(assetIds, getLink);
+    let assetData = await assetDb.getAssetData(dataRequest);
     res.json(assetData);
   })
   

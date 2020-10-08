@@ -1,5 +1,5 @@
-const mongoose = require('mongoose');
-const Schema = mongoose.Schema;
+import mongoose, { Schema, Document } from 'mongoose';
+import { Asset } from '../types';
 
 const assetSchema = new Schema({
   sharetribe_user_id: String,
@@ -9,6 +9,6 @@ const assetSchema = new Schema({
   date_added: { type: Date, default: Date.now },
 });
 
-const Asset = mongoose.model('Asset', assetSchema);
+const AssetModel = mongoose.model<Asset>('Asset', assetSchema);
 
-module.exports = Asset;
+export default AssetModel;
