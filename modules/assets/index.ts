@@ -2,34 +2,7 @@ import { AssetIO } from './controllers/asset-io';
 import { AssetDB } from './controllers/asset-db';
 
 import { Application, Request, Response } from "express";
-import { AssetDataRequest, UploadRequest, UploadResponse } from './types';
-import { UploadedFile } from 'express-fileupload';
-
-// interface UploadRequest {
-//   file: UploadedFile, // this is the file blob which doesn't exist in node?
-//   user_id: string,
-//   listing_id: string;
-// }
-
-// interface UploadResponse {
-//   [key: string]: { _id: string }
-// }
-
-// interface AssetDataRequest {
-//   ids: [{ scoreshelf_id: string }],
-//   get_link: boolean
-// }
-
-interface FileToRemove {
-  _id: string,
-  sharetribe_user_id: string,
-  sharetribe_listing_id: string,
-  asset_name: string
-}
-
-interface DeleteAssetRequest {
-  filesToRemove: FileToRemove[]
-}
+import { AssetDataRequest, DeleteAssetRequest, UploadRequest, UploadResponse } from './types';
 
 module.exports = function(app: Application) {
 
@@ -62,7 +35,7 @@ module.exports = function(app: Application) {
 
     const receivedBody: DeleteAssetRequest = req.body;
     Promise.all(
-      receivedBody.filesToRemove.map(async (file: FileToRemove) => {
+      receivedBody.filesToRemove.map(async (file) => {
         await assetDb.deleteAssetData(file._id);
         await assetIo.deleteAssetFile(`${file.sharetribe_user_id}/${file.sharetribe_listing_id}/${file.asset_name}`)
       })

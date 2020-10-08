@@ -1,9 +1,10 @@
-const S3_SDK = require('aws-sdk/clients/s3');
+import S3_SDK from 'aws-sdk/clients/s3';
+import { Asset } from '../types';
+import { UploadedFile } from 'express-fileupload';
 
-class S3 {
-  constructor() {
-    this.bucket = 'scoreshelf';
-  }
+export class S3 {
+  bucket = 'scoreshelf';
+
   connectToStorage() {
     const instance = new S3_SDK({
       accessKeyId: 'minio' ,
@@ -21,7 +22,7 @@ class S3 {
     return buckets;
   }
 
-  async uploadFile(file, fileName) {
+  async uploadFile(file: UploadedFile["data"], fileName: string) {
     const s3 = this.connectToStorage();
     const uploadParams = { 
       Bucket: this.bucket, 
@@ -33,7 +34,7 @@ class S3 {
     return res_upload;
   }
 
-  async removeFile(fileName) {
+  async removeFile(fileName: string) {
     const s3 = this.connectToStorage();
     const deleteParams = {
       Bucket: this.bucket,
@@ -44,15 +45,13 @@ class S3 {
     return res_delete;
   }
 
-  async getSignedUrl(asset) {
+  getSignedUrl(asset: Asset) {
     const s3 = this.connectToStorage();
     const params = {
       Bucket: this.bucket, 
       Key: `${asset.sharetribe_user_id}/${asset.sharetribe_listing_id}/${asset.asset_name}`
     };
-    const link = await s3.getSignedUrl('getObject', params);
+    const link = s3.getSignedUrl('getObject', params);
     return link;
   }
 }
-
-module.exports = S3;

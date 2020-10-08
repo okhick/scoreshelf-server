@@ -7,6 +7,7 @@ const assetSchema = new Schema({
   asset_name: String,
   size: Number,
   date_added: { type: Date, default: Date.now },
+  link: String, 
 });
 
 const AssetModel = mongoose.model<Asset>('Asset', assetSchema);
