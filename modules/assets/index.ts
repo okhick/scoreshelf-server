@@ -49,7 +49,7 @@ module.exports = function(app: Application) {
 
     const receivedBody = req.body;
     const dataRequest: AssetDataRequest = {
-      ids: receivedBody.ids,
+      scoreshelf_ids: receivedBody.scoreshelf_ids,
       getLink: receivedBody.get_link
     }
 

@@ -12,7 +12,7 @@ export interface Asset extends Document {
 }
 
 export interface AssetDataRequest {
-  ids: [{ scoreshelf_id: string }],
+  scoreshelf_ids: string[],
   getLink: boolean
 }
 
@@ -25,10 +25,6 @@ export interface FileToRemove {
   sharetribe_user_id: Asset["sharetribe_user_id"],
   sharetribe_listing_id: Asset["sharetribe_listing_id"],
   asset_name: Asset["asset_name"],
-}
-
-export interface HydratedAsset extends Asset {
-  link: string
 }
 
 export interface UploadRequest {
