@@ -1,14 +1,17 @@
-const Express = require('express');
-const Mongoose = require("mongoose");
+import Express from 'express';
+import Mongoose from 'mongoose';
 
 const port = 3000;
 const app = Express();
 module.exports = app;
 
+console.log()
+
 // these export a function that takes the argument 'app'. that's what's going on here.
+// is this dependency injecting?
 // make sure to load the express before the routes otherwise things can get weird...
 require('./config/express')(app);
-require('./config/routes')(app);
+require('./modules/assets')(app);
 
 connect();
 
@@ -24,7 +27,7 @@ function connect() {
     .once('open', listen); // spin up express when connected to mongo
 
   return Mongoose.connect("mongodb://mongo:27017/scoreshelf", {
-    keepAlive: 1,
+    keepAlive: true,
     useNewUrlParser: true,
     useUnifiedTopology: true,
     authSource: "admin",

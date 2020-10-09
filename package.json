@@ -5,21 +5,29 @@
   "main": "server.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node server.js",
-    "dev": "nodemon server.js"
+    "start": "node dist/server.js",
+    "dev": "nodemon server.ts",
+    "build": "tsc -p ."
   },
   "author": "Oliver Hickman",
   "license": "ISC",
   "dependencies": {
-    "aws-sdk": "^2.735.0",
+    "aws-sdk": "^2.768.0",
     "axios": "^0.19.2",
     "body-parser": "^1.19.0",
     "cors": "^2.8.5",
     "express": "^4.17.1",
-    "express-fileupload": "^1.1.10",
-    "mongoose": "^5.9.28"
+    "express-fileupload": "^1.2.0",
+    "mongoose": "^5.10.8"
   },
   "devDependencies": {
-    "nodemon": "^2.0.4"
+    "@types/cors": "^2.8.7",
+    "@types/express": "^4.17.8",
+    "@types/express-fileupload": "^1.1.5",
+    "@types/mongoose": "^5.7.36",
+    "@types/node": "^14.11.2",
+    "nodemon": "^2.0.4",
+    "ts-node": "^9.0.0",
+    "typescript": "^4.0.3"
   }
 }

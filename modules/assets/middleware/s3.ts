@@ -1,10 +1,14 @@
-const S3_SDK = require('aws-sdk/clients/s3');
+import S3_SDK from 'aws-sdk/clients/s3';
+import { AWSError } from 'aws-sdk/lib/core';
 
-class S3 {
-  constructor() {
-    this.bucket = 'scoreshelf';
-  }
-  connectToStorage() {
+import { Asset } from '../types';
+import { UploadedFile } from 'express-fileupload';
+import { PromiseResult } from 'aws-sdk/lib/request';
+
+export class S3 {
+  bucket = 'scoreshelf';
+
+  connectToStorage(): S3_SDK {
     const instance = new S3_SDK({
       accessKeyId: 'minio' ,
       secretAccessKey: 'minio123' ,
@@ -15,13 +19,13 @@ class S3 {
     return instance;
   }
 
-  async listBuckets() {
+  async listBuckets(): Promise<PromiseResult<S3_SDK.ListBucketsOutput, AWSError>> {
     const s3 = this.connectToStorage();
     const buckets = await s3.listBuckets().promise();
     return buckets;
   }
 
-  async uploadFile(file, fileName) {
+  async uploadFile(file: UploadedFile["data"], fileName: string): Promise<S3_SDK.ManagedUpload.SendData> {
     const s3 = this.connectToStorage();
     const uploadParams = { 
       Bucket: this.bucket, 
@@ -33,7 +37,7 @@ class S3 {
     return res_upload;
   }
 
-  async removeFile(fileName) {
+  async removeFile(fileName: string): Promise<PromiseResult<S3_SDK.DeleteObjectOutput, AWSError>> {
     const s3 = this.connectToStorage();
     const deleteParams = {
       Bucket: this.bucket,
@@ -44,15 +48,13 @@ class S3 {
     return res_delete;
   }
 
-  async getSignedUrl(asset) {
+  getSignedUrl(asset: Asset): string {
     const s3 = this.connectToStorage();
     const params = {
       Bucket: this.bucket, 
       Key: `${asset.sharetribe_user_id}/${asset.sharetribe_listing_id}/${asset.asset_name}`
     };
-    const link = await s3.getSignedUrl('getObject', params);
+    const link = s3.getSignedUrl('getObject', params);
     return link;
   }
 }
-
-module.exports = { S3 };

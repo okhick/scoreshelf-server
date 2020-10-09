@@ -1,12 +1,14 @@
 // ===================================
-// Starts up the GraphQl Server. More middlewear might go here
+// Basic middlewear
 // ===================================
 
-const bodyParser = require('body-parser');
-const fileUpload = require('express-fileupload');
-const cors = require('cors');
+import { Application } from "express";
 
-module.exports = function(app) {
+import bodyParser from 'body-parser';
+import fileUpload from 'express-fileupload';
+import cors from 'cors';
+
+module.exports = function(app: Application) {
   // stuff to parse requests
   app.use(bodyParser.json());
   app.use(bodyParser.urlencoded({ extended: true }))
