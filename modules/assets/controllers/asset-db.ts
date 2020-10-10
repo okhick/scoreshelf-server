@@ -1,7 +1,7 @@
 import AssetModel from '../models/Asset';
 import { S3 } from '../middleware/s3';
 
-import { Asset, AssetDataRequest, UploadRequest } from '../types';
+import { Asset, AssetDataRequest, UploadRequest } from '../@types';
 
 export class AssetDB {
   async saveAssetData(upload: UploadRequest): Promise<Asset> {

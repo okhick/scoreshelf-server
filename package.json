@@ -18,7 +18,9 @@
     "cors": "^2.8.5",
     "express": "^4.17.1",
     "express-fileupload": "^1.2.0",
-    "mongoose": "^5.10.8"
+    "mongoose": "^5.10.8",
+    "pdf2json": "^1.2.0",
+    "pdf2pic": "^2.1.2"
   },
   "devDependencies": {
     "@types/cors": "^2.8.7",

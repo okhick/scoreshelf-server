@@ -1,8 +1,15 @@
 import { AssetIO } from './controllers/asset-io';
 import { AssetDB } from './controllers/asset-db';
 
+import PDFParser from "pdf2json";
+import { fromBase64 } from "pdf2pic";
+import { readFileSync } from "fs";
+
 import { Application, Request, Response } from "express";
-import { AssetDataRequest, DeleteAssetRequest, UploadRequest, UploadResponse } from './types';
+import { AssetDataRequest, DeleteAssetRequest, UploadRequest, UploadResponse } from './@types';
+
+
+
 
 module.exports = function(app: Application) {
 
@@ -55,6 +62,12 @@ module.exports = function(app: Application) {
 
     let assetData = await assetDb.getAssetData(dataRequest);
     res.json(assetData);
+  });
+
+  app.get("/testpdfparse", async (req: Request, res: Response) => {
+    const PDF = readFileSync('/var/server/brickwall.pdf');
+    const pdfData = await getPdfJSON(PDF);
+    return res.json(pdfData);
   })
   
   // TESTS
@@ -62,4 +75,22 @@ module.exports = function(app: Application) {
     res.json("ASSET MODULE");
   });
 
+}
+
+function getPdfJSON(pdf: Buffer) {
+  const pdfParser = new PDFParser();
+  return new Promise((resolve, reject) => {
+    // why do i have to assign these to use them in the listeners
+    const res = resolve;
+    const rej = reject;
+    
+    // not sure why they made these listeners not just promises...
+    pdfParser.on("pdfParser_dataReady", (pdfData: any) => {
+      resolve(pdfData);
+    });
+    pdfParser.on("pdfParser_dataError", (errData: any) => {
+      reject(errData);
+    });
+    pdfParser.parseBuffer(pdf);
+  });
 }

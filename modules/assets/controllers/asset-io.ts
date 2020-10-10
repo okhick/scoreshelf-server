@@ -1,6 +1,6 @@
 import { ManagedUpload } from 'aws-sdk/clients/s3';
 import { S3 } from '../middleware/s3';
-import { UploadRequest } from '../types';
+import { UploadRequest } from '../@types';
 
 export class AssetIO {
   async saveAssetFile(upload: UploadRequest): Promise<ManagedUpload.SendData> {

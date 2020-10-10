@@ -36,6 +36,3 @@ export interface UploadRequest {
 export interface UploadResponse {
   [key: string]: { _id: string }
 }
-
-
-

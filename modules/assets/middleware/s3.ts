@@ -1,7 +1,7 @@
 import S3_SDK from 'aws-sdk/clients/s3';
 import { AWSError } from 'aws-sdk/lib/core';
 
-import { Asset } from '../types';
+import { Asset } from '../@types';
 import { UploadedFile } from 'express-fileupload';
 import { PromiseResult } from 'aws-sdk/lib/request';
 
