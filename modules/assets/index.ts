@@ -1,9 +1,10 @@
 import { AssetIO } from './controllers/asset-io';
 import { AssetDB } from './controllers/asset-db';
+import { AssetProcessing } from './middleware/asset-processing';
 
 import PDFParser from "pdf2json";
 import { fromBase64 } from "pdf2pic";
-import { readFileSync, mkdirSync, rmdirSync, fstat } from "fs";
+import { readFileSync, mkdirSync, rmdirSync } from "fs";
 
 import { Application, Request, Response } from "express";
 import { AssetDataRequest, DeleteAssetRequest, UploadRequest, UploadResponse } from './@types';
@@ -62,30 +63,13 @@ module.exports = function(app: Application) {
   });
 
   app.get("/testpdfparse", async (req: Request, res: Response) => {
+    const assetProcessing = new AssetProcessing;
+
     const pageToConvertAsImage = 1;
-    const PDF = readFileSync('/var/server/Vue.js Cheat Sheet.pdf');
-    const pdfJSON = await getPdfJSON(PDF);
-    const pdfData = getPdfDimensions(pdfJSON, pageToConvertAsImage);
+    const PDF = readFileSync('/var/server/brickwall.pdf');
+    const thumbnailFilePath = await assetProcessing.makePdfThumbnail(PDF, pageToConvertAsImage);
 
-    const imgDimensions = setImageDimensions(pdfData.ratio);
-
-    const imageOptions = {
-      density: 300,
-      saveFilename: pdfJSON.formImage.Agency,
-      savePath: "./temp",
-      format: "png",
-      width: imgDimensions.width,
-      height: imgDimensions.height,
-    };
-
-    // for some reason it was giving me greif about just a normal buffer
-    const base = PDF.toString('base64');
-    const convertToImage = fromBase64(base, imageOptions);
-
-    mkdirSync("./temp");
-    await convertToImage(pageToConvertAsImage);
-    res.sendFile(`/var/server/temp/${pdfJSON.formImage.Agency}.${pageToConvertAsImage}.png`);
-    res.on('finish', () => rmdirSync("./temp",{recursive:true}));
+    res.sendFile(thumbnailFilePath);
   })
   
   // TESTS
@@ -93,48 +77,4 @@ module.exports = function(app: Application) {
     res.json("ASSET MODULE");
   });
 
-}
-
-function getPdfJSON(pdf: Buffer): Promise<PDFJson> {
-  const pdfParser = new PDFParser();
-  return new Promise((resolve, reject) => {
-    // why do i have to assign these to use them in the listeners
-    const res = resolve;
-    const rej = reject;
-    
-    // not sure why they made these listeners not just promises...
-    pdfParser.on("pdfParser_dataReady", (pdfData: PDFJson) => {
-      resolve(pdfData);
-    });
-    pdfParser.on("pdfParser_dataError", (errData: any) => {
-      reject(errData);
-    });
-    pdfParser.parseBuffer(pdf);
-  });
-}
-
-function getPdfDimensions(pdfJSON: PDFJson, pageIndex: number): 
-  { width: number, height: number, ratio: number } {
-  // Page unit equals (96px/inch * 1inch / 4) = 24px/inch. See pdf2json/lib/pdfunit.js
-  const pixelsPerInch = 24;
-
-  const width = pdfJSON.formImage.Width * pixelsPerInch;
-  const height = pdfJSON.formImage.Pages[pageIndex].Height * pixelsPerInch;
-  const ratio = width / height;
-  return { width, height, ratio }
-}
-
-function setImageDimensions(ratio: number): 
-  { width: number, height: number } {
-  const longSide = 900;
-  let height = longSide;
-  let width = height * ratio;
-
-  // if this is true, it's landscape and we need scale to width = 900
-  if (ratio > 1) {
-    const mul = longSide / width;
-    width = width * mul;
-    height = height * mul;
-  }
-  return { width, height }
 }
