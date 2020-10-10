@@ -2,13 +2,10 @@ import { AssetIO } from './controllers/asset-io';
 import { AssetDB } from './controllers/asset-db';
 import { AssetProcessing } from './middleware/asset-processing';
 
-import PDFParser from "pdf2json";
-import { fromBase64 } from "pdf2pic";
-import { readFileSync, mkdirSync, rmdirSync } from "fs";
+import { readFileSync, statSync, rmdirSync } from "fs";
 
 import { Application, Request, Response } from "express";
 import { AssetDataRequest, DeleteAssetRequest, UploadRequest, UploadResponse } from './@types';
-import { PDFJson } from 'pdf2json/typings';
 
 module.exports = function(app: Application) {
 
@@ -69,7 +66,7 @@ module.exports = function(app: Application) {
     const PDF = readFileSync('/var/server/brickwall.pdf');
     const thumbnailFilePath = await assetProcessing.makePdfThumbnail(PDF, pageToConvertAsImage);
 
-    res.sendFile(thumbnailFilePath);
+    res.json(thumbnailFilePath);
   })
   
   // TESTS

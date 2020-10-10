@@ -2,6 +2,7 @@ import PDFParser from "pdf2json";
 import { fromBase64 } from "pdf2pic";
 import { existsSync, mkdirSync } from "fs";
 import { PDFJson } from 'pdf2json/typings';
+import path from "path";
 
 export class AssetProcessing {
   // Some constants
@@ -10,7 +11,7 @@ export class AssetProcessing {
   PDF2PIC_TEMP_SAVE_PATH = "/var/server/temp";
   PDF2PIC_LONG_SIDE = 900;
 
-  async makePdfThumbnail(pdf: Buffer, page: number) {
+  async makePdfThumbnail(pdf: Buffer, page: number): Promise<path.ParsedPath> {
     const pdfJSON = await this.getPdfJSON(pdf);
     const pdfDim = this.getPdfDimensions(pdfJSON, page);
     const imgDimensions = this.setImageDimensions(pdfDim.ratio);
@@ -29,10 +30,12 @@ export class AssetProcessing {
     // for some reason it was giving me greif about just a normal buffer
     const pdf_base64 = pdf.toString('base64');
     const convertToImage = fromBase64(pdf_base64, imageOptions);
-    convertToImage(page);
+    await convertToImage(page);
 
-    const pathToImage = `${this.PDF2PIC_TEMP_SAVE_PATH}/${pdfJSON.formImage.Agency}.${page}.${this.PDF2PIC_IMG_FORMAT}`;
-    return pathToImage
+    const fullFileName: any = `${this.PDF2PIC_TEMP_SAVE_PATH}/${pdfJSON.formImage.Agency}.${page}.${this.PDF2PIC_IMG_FORMAT}`;
+    const fileNameParsed = path.parse(fullFileName)
+
+    return fileNameParsed
   }
 
   getPdfJSON(pdf: Buffer): Promise<PDFJson> {
