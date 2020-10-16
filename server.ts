@@ -23,17 +23,11 @@ function listen() {
 function connect() {
   Mongoose.connection
     .on('error', console.log)
-    .on('disconnected', connect) // reconnect if disconnected
+    // .on('disconnected', connect) // reconnect if disconnected
     .once('open', listen); // spin up express when connected to mongo
 
-  return Mongoose.connect("mongodb://mongo:27017/scoreshelf", {
-    keepAlive: true,
+  return Mongoose.connect("mongodb+srv://scoreshelf:theshelf@cluster0.3ktpg.mongodb.net/scoreshelf?retryWrites=true&w=majority", {
     useNewUrlParser: true,
-    useUnifiedTopology: true,
-    authSource: "admin",
-    auth: {
-      user: 'root',
-      password: 'root'
-    }
+    useUnifiedTopology: true
   });
 }

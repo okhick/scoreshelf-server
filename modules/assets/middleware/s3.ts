@@ -10,10 +10,9 @@ export class S3 {
 
   connectToStorage(): S3_SDK {
     const instance = new S3_SDK({
-      accessKeyId: 'minio' ,
-      secretAccessKey: 'minio123' ,
-      endpoint: 'http://s3:9000' ,
-      s3ForcePathStyle: true, // needed with minio?
+      accessKeyId: 'HMEDIGOOYCMMPLUBGWUV' ,
+      secretAccessKey: 'XZqUFP8ZHiCFBqQsyioaa8tGfU8gNbzKdP3g0Tmzdt4' ,
+      endpoint: 'https://nyc3.digitaloceanspaces.com/' ,
     });
 
     return instance;
