@@ -5,7 +5,7 @@ import { AssetProcessing } from './middleware/asset-processing';
 import { readFileSync, statSync, rmdirSync } from "fs";
 
 import { Application, Request, Response } from "express";
-import { AssetDataRequest, DeleteAssetRequest, UploadRequest, UploadResponse } from './@types';
+import { AssetDataRequest, DeleteAssetRequest, UploadRequest, UpdateRequest, UploadResponse } from './@types';
 
 module.exports = function(app: Application) {
 
@@ -21,7 +21,8 @@ module.exports = function(app: Application) {
       const upload: UploadRequest = {
         file: receivedFiles[key], 
         sharetribe_user_id: receivedBody.sharetribe_user_id,
-        sharetribe_listing_id: receivedBody.sharetribe_listing_id
+        sharetribe_listing_id: receivedBody.sharetribe_listing_id,
+        thumbnailSettings: receivedBody.thumbnailSettings
       };
       
       await assetIo.saveAssetFile(upload);
@@ -45,6 +46,13 @@ module.exports = function(app: Application) {
     
     return res.json(true);
   });
+
+  app.post("/updateAssetMetadata", async (req: Request, res: Response) => {
+    const assetDb = new AssetDB;
+
+    const updateRes = await assetDb.updateAssetData(req.body);
+    return res.json(updateRes);
+  })
 
   app.post("/getAssetData", async (req: Request, res: Response) => {
     const assetDb = new AssetDB;

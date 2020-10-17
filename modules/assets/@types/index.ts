@@ -9,6 +9,10 @@ export interface Asset extends Document {
   size: number,
   date_added: Date,
   link?: string | null
+  thumbnail_settings?: {
+    isThumbnail: Boolean,
+    page: Number
+  }
 }
 
 export interface AssetDataRequest {
@@ -31,6 +35,17 @@ export interface UploadRequest {
   file: UploadedFile,
   sharetribe_user_id: string,
   sharetribe_listing_id: string;
+  thumbnailSettings: {
+    [key: string]: { isThumbnail: boolean, page: number }
+  }
+}
+
+export interface UpdateRequest {
+  sharetribe_user_id: string,
+  sharetribe_listing_id: string;
+  thumbnailSettings: {
+    [key: string]: { isThumbnail: boolean, page: number }
+  }
 }
 
 export interface UploadResponse {

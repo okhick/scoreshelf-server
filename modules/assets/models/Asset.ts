@@ -8,6 +8,10 @@ const assetSchema = new Schema({
   size: Number,
   date_added: { type: Date, default: Date.now },
   link: String, 
+  thumbnail_settings: {
+    isThumbnail: Boolean,
+    page: Number
+  }
 });
 
 const AssetModel = mongoose.model<Asset>('Asset', assetSchema);

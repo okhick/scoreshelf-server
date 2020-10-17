@@ -1,7 +1,7 @@
 import AssetModel from '../models/Asset';
 import { S3 } from '../middleware/s3';
 
-import { Asset, AssetDataRequest, UploadRequest } from '../@types';
+import { Asset, AssetDataRequest, UploadRequest, UpdateRequest } from '../@types';
 
 export class AssetDB {
   async saveAssetData(upload: UploadRequest): Promise<Asset> {
@@ -27,6 +27,26 @@ export class AssetDB {
         return assetData;
       })
     );
+  }
+
+  async updateAssetData(newData: UpdateRequest) {
+    // right now this just updates thumbnail data
+    const scoreshelf_ids = Object.keys(newData.thumbnailSettings);
+
+    return Promise.all(
+      scoreshelf_ids.map(async (id): Promise<Asset|boolean> => {
+        let newAssetData = newData.thumbnailSettings[id];
+        let thisAssetDoc = await AssetModel.findOne({_id: id});
+        
+        if (thisAssetDoc != null) {
+          thisAssetDoc.thumbnail_settings = newAssetData;
+          const updatedAsset = await thisAssetDoc.save();
+          return updatedAsset
+        }
+
+        return false;
+      })
+    )
   }
 
   async deleteAssetData(id: string): Promise<Asset|null> {
