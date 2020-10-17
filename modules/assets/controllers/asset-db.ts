@@ -10,6 +10,10 @@ export class AssetDB {
       sharetribe_listing_id: upload.sharetribe_listing_id,
       asset_name: upload.file.name,
       size: upload.file.size,
+      thumbnail_settings: {
+        isThumbnail: upload.thumbnailSettings.isThumbnail,
+        page: upload.thumbnailSettings.page
+      }
     });
     const newAssetRes = await newAsset.save();
     return newAssetRes;

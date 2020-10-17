@@ -14,15 +14,16 @@ module.exports = function(app: Application) {
     const assetDb = new AssetDB;
 
     const receivedFiles = req.files;
-    const receivedBody = req.body;
+    const receivedBody = JSON.parse(req.body.assetMetadata);
     const response: UploadResponse = {};
     
     for (const key in receivedFiles) {
+
       const upload: UploadRequest = {
         file: receivedFiles[key], 
         sharetribe_user_id: receivedBody.sharetribe_user_id,
         sharetribe_listing_id: receivedBody.sharetribe_listing_id,
-        thumbnailSettings: receivedBody.thumbnailSettings
+        thumbnailSettings: receivedBody.thumbnailSettings[receivedFiles[key].name]
       };
       
       await assetIo.saveAssetFile(upload);
