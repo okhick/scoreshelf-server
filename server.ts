@@ -5,8 +5,6 @@ const port = 3000;
 const app = Express();
 module.exports = app;
 
-console.log()
-
 // these export a function that takes the argument 'app'. that's what's going on here.
 // is this dependency injecting?
 // make sure to load the express before the routes otherwise things can get weird...
@@ -26,8 +24,11 @@ function connect() {
     // .on('disconnected', connect) // reconnect if disconnected
     .once('open', listen); // spin up express when connected to mongo
 
-  return Mongoose.connect("mongodb+srv://scoreshelf:theshelf@cluster0.3ktpg.mongodb.net/scoreshelf?retryWrites=true&w=majority", {
-    useNewUrlParser: true,
-    useUnifiedTopology: true
-  });
+  return Mongoose.connect(
+    'mongodb+srv://scoreshelf:theshelf@cluster0.3ktpg.mongodb.net/scoreshelf?retryWrites=true&w=majority',
+    {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+    }
+  );
 }

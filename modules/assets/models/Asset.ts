@@ -7,11 +7,11 @@ const assetSchema = new Schema({
   asset_name: String,
   size: Number,
   date_added: { type: Date, default: Date.now },
-  link: String, 
+  link: String,
   thumbnail_settings: {
     isThumbnail: Boolean,
-    page: Number
-  }
+    page: Number,
+  },
 });
 
 const AssetModel = mongoose.model<Asset>('Asset', assetSchema);

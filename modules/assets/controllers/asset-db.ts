@@ -12,24 +12,26 @@ export class AssetDB {
       size: upload.file.size,
       thumbnail_settings: {
         isThumbnail: upload.thumbnailSettings.isThumbnail,
-        page: upload.thumbnailSettings.page
-      }
+        page: upload.thumbnailSettings.page,
+      },
     });
     const newAssetRes = await newAsset.save();
     return newAssetRes;
   }
 
-  async getAssetData(dataRequest: AssetDataRequest): Promise<(Asset|null)[]> {
+  async getAssetData(dataRequest: AssetDataRequest): Promise<(Asset | null)[]> {
     return Promise.all(
-      dataRequest.scoreshelf_ids.map(async (id): Promise<Asset|null> => {
-        const assetData = await AssetModel.findById(id);
-        if (dataRequest.getLink && assetData != null) { 
-          const s3 = new S3();
-          const link = s3.getSignedUrl(assetData);
-          assetData.link = link;
+      dataRequest.scoreshelf_ids.map(
+        async (id): Promise<Asset | null> => {
+          const assetData = await AssetModel.findById(id);
+          if (dataRequest.getLink && assetData != null) {
+            const s3 = new S3();
+            const link = s3.getSignedUrl(assetData);
+            assetData.link = link;
+          }
+          return assetData;
         }
-        return assetData;
-      })
+      )
     );
   }
 
@@ -38,23 +40,25 @@ export class AssetDB {
     const scoreshelf_ids = Object.keys(newData.thumbnailSettings);
 
     return Promise.all(
-      scoreshelf_ids.map(async (id): Promise<Asset|boolean> => {
-        let newAssetData = newData.thumbnailSettings[id];
-        let thisAssetDoc = await AssetModel.findOne({_id: id});
-        
-        if (thisAssetDoc != null) {
-          thisAssetDoc.thumbnail_settings = newAssetData;
-          const updatedAsset = await thisAssetDoc.save();
-          return updatedAsset
-        }
+      scoreshelf_ids.map(
+        async (id): Promise<Asset | boolean> => {
+          let newAssetData = newData.thumbnailSettings[id];
+          let thisAssetDoc = await AssetModel.findOne({ _id: id });
 
-        return false;
-      })
-    )
+          if (thisAssetDoc != null) {
+            thisAssetDoc.thumbnail_settings = newAssetData;
+            const updatedAsset = await thisAssetDoc.save();
+            return updatedAsset;
+          }
+
+          return false;
+        }
+      )
+    );
   }
 
-  async deleteAssetData(id: string): Promise<Asset|null> {
-    let res = await AssetModel.findOneAndDelete({_id: id});
+  async deleteAssetData(id: string): Promise<Asset | null> {
+    let res = await AssetModel.findOneAndDelete({ _id: id });
     return res;
   }
 }

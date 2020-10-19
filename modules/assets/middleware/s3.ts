@@ -10,9 +10,9 @@ export class S3 {
 
   connectToStorage(): S3_SDK {
     const instance = new S3_SDK({
-      accessKeyId: 'HMEDIGOOYCMMPLUBGWUV' ,
-      secretAccessKey: 'XZqUFP8ZHiCFBqQsyioaa8tGfU8gNbzKdP3g0Tmzdt4' ,
-      endpoint: 'https://nyc3.digitaloceanspaces.com/' ,
+      accessKeyId: 'HMEDIGOOYCMMPLUBGWUV',
+      secretAccessKey: 'XZqUFP8ZHiCFBqQsyioaa8tGfU8gNbzKdP3g0Tmzdt4',
+      endpoint: 'https://nyc3.digitaloceanspaces.com/',
     });
 
     return instance;
@@ -24,15 +24,18 @@ export class S3 {
     return buckets;
   }
 
-  async uploadFile(file: UploadedFile["data"], fileName: string): Promise<S3_SDK.ManagedUpload.SendData> {
+  async uploadFile(
+    file: UploadedFile['data'],
+    fileName: string
+  ): Promise<S3_SDK.ManagedUpload.SendData> {
     const s3 = this.connectToStorage();
-    const uploadParams = { 
-      Bucket: this.bucket, 
-      Key: fileName, 
-      Body: file 
+    const uploadParams = {
+      Bucket: this.bucket,
+      Key: fileName,
+      Body: file,
     };
 
-    const res_upload = await s3.upload (uploadParams).promise();
+    const res_upload = await s3.upload(uploadParams).promise();
     return res_upload;
   }
 
@@ -40,7 +43,7 @@ export class S3 {
     const s3 = this.connectToStorage();
     const deleteParams = {
       Bucket: this.bucket,
-      Key: fileName
+      Key: fileName,
     };
 
     const res_delete = await s3.deleteObject(deleteParams).promise();
@@ -50,8 +53,8 @@ export class S3 {
   getSignedUrl(asset: Asset): string {
     const s3 = this.connectToStorage();
     const params = {
-      Bucket: this.bucket, 
-      Key: `${asset.sharetribe_user_id}/${asset.sharetribe_listing_id}/${asset.asset_name}`
+      Bucket: this.bucket,
+      Key: `${asset.sharetribe_user_id}/${asset.sharetribe_listing_id}/${asset.asset_name}`,
     };
     const link = s3.getSignedUrl('getObject', params);
     return link;
