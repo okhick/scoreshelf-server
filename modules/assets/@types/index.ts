@@ -15,6 +15,13 @@ export interface Asset extends Document {
   };
 }
 
+export interface Thumbnail extends Document {
+  sharetribe_user_id: string;
+  sharetribe_listing_id: string;
+  asset_name: string;
+  date_added: Date;
+}
+
 export interface AssetDataRequest {
   scoreshelf_ids: string[];
   getLink: boolean;

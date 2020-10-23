@@ -46,7 +46,7 @@ export class S3 {
       Key: fileName,
     };
 
-    const res_delete = await s3.deleteObject(deleteParams).promise();
+    const res_delete = await s3.deleteObject(deleteParams).promise()
     return res_delete;
   }
 

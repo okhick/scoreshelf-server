@@ -1,4 +1,4 @@
-import AssetModel from '../models/Asset';
+import { AssetModel } from '../models/Asset';
 import { S3 } from '../middleware/s3';
 
 import { Asset, AssetDataRequest, UploadRequest, UpdateRequest } from '../@types';

@@ -1,5 +1,5 @@
 import mongoose, { Schema, Document } from 'mongoose';
-import { Asset } from '../@types';
+import { Asset, Thumbnail } from '../@types';
 
 const assetSchema = new Schema({
   sharetribe_user_id: String,
@@ -14,6 +14,14 @@ const assetSchema = new Schema({
   },
 });
 
-const AssetModel = mongoose.model<Asset>('Asset', assetSchema);
+const thumbnailSchema = new Schema({
+  sharetribe_user_id: String,
+  sharetribe_listing_id: String,
+  asset_name: String,
+  date_added: { type: Date, default: Date.now },
+});
 
-export default AssetModel;
+export const AssetModel = mongoose.model<Asset>('Asset', assetSchema);
+export const ThumbnailModel = mongoose.model<Thumbnail>('Generated', thumbnailSchema);
+
+// export default { AssetModel, ThumbnailModel };
