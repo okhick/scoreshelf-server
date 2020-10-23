@@ -1,7 +1,14 @@
-import { AssetModel } from '../models/Asset';
+import { AssetModel, ThumbnailModel } from '../models/Asset';
 import { S3 } from '../middleware/s3';
 
-import { Asset, AssetDataRequest, UploadRequest, UpdateRequest } from '../@types';
+import {
+  Asset,
+  Thumbnail,
+  AssetDataRequest,
+  UploadRequest,
+  UpdateRequest,
+  UploadThumbnailRequest,
+} from '../@types';
 
 export class AssetDB {
   async saveAssetData(upload: UploadRequest): Promise<Asset> {
@@ -17,6 +24,17 @@ export class AssetDB {
     });
     const newAssetRes = await newAsset.save();
     return newAssetRes;
+  }
+
+  async saveThumbnailData(upload: UploadThumbnailRequest): Promise<Thumbnail> {
+    const newThumbnail = new ThumbnailModel({
+      sharetribe_user_id: upload.sharetribe_user_id,
+      sharetribe_listing_id: upload.sharetribe_listing_id,
+      asset_name: `thumb.${upload.filename}`,
+      page: upload.page,
+    });
+    const newThumbnailRes = await newThumbnail.save();
+    return newThumbnailRes;
   }
 
   async getAssetData(dataRequest: AssetDataRequest): Promise<(Asset | null)[]> {

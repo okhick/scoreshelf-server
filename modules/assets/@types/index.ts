@@ -48,6 +48,14 @@ export interface UploadRequest {
   };
 }
 
+export interface UploadThumbnailRequest {
+  file: Buffer;
+  filename: string;
+  sharetribe_user_id: string;
+  sharetribe_listing_id: string;
+  page: number;
+}
+
 export interface UpdateRequest {
   sharetribe_user_id: string;
   sharetribe_listing_id: string;

@@ -18,6 +18,7 @@ const thumbnailSchema = new Schema({
   sharetribe_user_id: String,
   sharetribe_listing_id: String,
   asset_name: String,
+  page: Number,
   date_added: { type: Date, default: Date.now },
 });
 
