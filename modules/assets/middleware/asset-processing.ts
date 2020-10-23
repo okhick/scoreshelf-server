@@ -1,15 +1,10 @@
 import { AssetIO } from '../controllers/asset-io';
 import { AssetDB } from '../controllers/asset-db';
-import { Asset } from '../@types';
+import { Asset2Thumbnail } from './asset2thumbnail';
 
-import { Application, Request, Response } from 'express';
-import {
-  AssetDataRequest,
-  DeleteAssetRequest,
-  UploadRequest,
-  UpdateRequest,
-  UploadResponse,
-} from '../@types';
+import { Request } from 'express';
+import { DeleteAssetRequest, UploadRequest, UploadResponse } from '../@types';
+import { resolve } from 'path';
 
 export class AssetProcessing {
   async uploadAssets(assets: Request['files'], data: any) {
@@ -18,19 +13,27 @@ export class AssetProcessing {
 
     const response: UploadResponse = {};
 
-    for (const key in assets) {
-      const upload: UploadRequest = {
-        file: assets[key],
-        sharetribe_user_id: data.sharetribe_user_id,
-        sharetribe_listing_id: data.sharetribe_listing_id,
-        thumbnailSettings: data.thumbnailSettings[assets[key].name],
-      };
+    if (assets) {
+      const assetKeys = Object.keys(assets);
+      await Promise.all(
+        assetKeys.map(async (assetKey) => {
+          const upload: UploadRequest = {
+            file: assets[assetKey],
+            sharetribe_user_id: data.sharetribe_user_id,
+            sharetribe_listing_id: data.sharetribe_listing_id,
+            thumbnailSettings: data.thumbnailSettings[assets[assetKey].name],
+          };
 
-      await assetIo.saveAssetFile(upload);
-      const mongoRes = await assetDb.saveAssetData(upload);
-      response[mongoRes.asset_name] = { _id: mongoRes._id };
+          if (upload.thumbnailSettings.isThumbnail) {
+            await this.newThumbnail(upload);
+          }
+
+          await assetIo.saveAssetFile(upload);
+          const mongoRes = await assetDb.saveAssetData(upload);
+          response[mongoRes.asset_name] = { _id: mongoRes._id };
+        })
+      );
     }
-
     return response;
   }
 
@@ -39,7 +42,7 @@ export class AssetProcessing {
     const assetDb = new AssetDB();
 
     const deletedFiles: String[] = [];
-    Promise.all(
+    await Promise.all(
       assets.filesToRemove.map(async (file) => {
         await assetDb.deleteAssetData(file._id);
         await assetIo.deleteAssetFile(
@@ -50,5 +53,20 @@ export class AssetProcessing {
     );
 
     return deletedFiles;
+  }
+
+  async newThumbnail(asset: UploadRequest) {
+    const asset2thumbnail = new Asset2Thumbnail();
+
+    const pageToConvertAsImage = asset.thumbnailSettings.page;
+    const PDF = asset.file.data;
+    const pdfName = asset.file.name;
+    const thumbnailFilePath = await asset2thumbnail.makePdfThumbnail(
+      PDF,
+      pdfName,
+      pageToConvertAsImage
+    );
+    console.log(thumbnailFilePath);
+    return;
   }
 }

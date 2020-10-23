@@ -43,7 +43,8 @@ export interface UploadRequest {
   sharetribe_user_id: string;
   sharetribe_listing_id: string;
   thumbnailSettings: {
-    [key: string]: { isThumbnail: boolean; page: number };
+    isThumbnail: boolean;
+    page: number;
   };
 }
 

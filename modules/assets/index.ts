@@ -1,4 +1,5 @@
 import { AssetDB } from './controllers/asset-db';
+import { Asset2Thumbnail } from './middleware/asset2thumbnail';
 import { AssetProcessing } from './middleware/asset-processing';
 
 import { readFileSync, statSync, rmdirSync } from 'fs';
@@ -7,7 +8,7 @@ import { Application, Request, Response } from 'express';
 import { AssetDataRequest, DeleteAssetRequest } from './@types';
 
 module.exports = function (app: Application) {
-  app.post('/uploadAsset', async (req: Request, res: Response) => {
+  app.post('/uploadAssets', async (req: Request, res: Response) => {
     const assetProcessing = new AssetProcessing();
 
     const receivedFiles = req.files;
@@ -18,7 +19,7 @@ module.exports = function (app: Application) {
     return res.json(response);
   });
 
-  app.delete('/deleteAsset', async (req: Request, res: Response) => {
+  app.delete('/deleteAssets', async (req: Request, res: Response) => {
     const assetProcessing = new AssetProcessing();
 
     const receivedBody: DeleteAssetRequest = req.body;
@@ -47,15 +48,20 @@ module.exports = function (app: Application) {
     res.json(assetData);
   });
 
-  // app.get("/testpdfparse", async (req: Request, res: Response) => {
-  //   const assetProcessing = new AssetProcessing;
+  // app.get('/testpdfparse', async (req: Request, res: Response) => {
+  //   const assetProcessing = new Asset2Thumbnail();
 
-  //   const pageToConvertAsImage = 1;
-  //   const PDF = readFileSync('/var/server/brickwall.pdf');
-  //   const thumbnailFilePath = await assetProcessing.makePdfThumbnail(PDF, pageToConvertAsImage);
+  //   const pageToConvertAsImage = 5;
+  //   // const PDF = readFileSync('./brickwall.pdf');
+  //   const PDF = readFileSync('./Scott Wollschleger - AMERICAN DREAM_8.4.17 (do not duplicate).pdf');
+  //   const thumbnailFilePath = await assetProcessing.makePdfThumbnail(
+  //     PDF,
+  //     'Scott Wollschleger - AMERICAN DREAM_8.4.17 (do not duplicate).pdf',
+  //     pageToConvertAsImage
+  //   );
 
   //   res.json(thumbnailFilePath);
-  // })
+  // });
 
   // TESTS
   app.get('/test', (req: Request, res: Response) => {

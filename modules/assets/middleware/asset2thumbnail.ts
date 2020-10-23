@@ -1,8 +1,7 @@
-import PDFParser from 'pdf2json';
 import { fromBase64 } from 'pdf2pic';
 import { existsSync, mkdirSync } from 'fs';
-import { PDFJson } from 'pdf2json/typings';
 import path from 'path';
+import { PDFDocument } from 'pdf-lib';
 
 export class Asset2Thumbnail {
   // Some constants
@@ -11,14 +10,13 @@ export class Asset2Thumbnail {
   PDF2PIC_TEMP_SAVE_PATH = '/var/server/temp';
   PDF2PIC_LONG_SIDE = 900;
 
-  async makePdfThumbnail(pdf: Buffer, page: number): Promise<path.ParsedPath> {
-    const pdfJSON = await this.getPdfJSON(pdf);
-    const pdfDim = this.getPdfDimensions(pdfJSON, page);
-    const imgDimensions = this.setImageDimensions(pdfDim.ratio);
+  async makePdfThumbnail(pdf: Buffer, pdfName: string, page: number) {
+    const pageDimensions = await this.getPdfSizeData(pdf, page);
+    const imgDimensions = this.setImageDimensions(pageDimensions.ratio);
 
     const imageOptions = {
       density: this.PDF2PIC_DENSITY,
-      saveFilename: pdfJSON.formImage.Agency,
+      saveFilename: pdfName,
       savePath: this.PDF2PIC_TEMP_SAVE_PATH,
       format: this.PDF2PIC_IMG_FORMAT,
       width: imgDimensions.width,
@@ -34,39 +32,29 @@ export class Asset2Thumbnail {
     const convertToImage = fromBase64(pdf_base64, imageOptions);
     await convertToImage(page);
 
-    const fullFileName: any = `${this.PDF2PIC_TEMP_SAVE_PATH}/${pdfJSON.formImage.Agency}.${page}.${this.PDF2PIC_IMG_FORMAT}`;
+    const fullFileName = `${this.PDF2PIC_TEMP_SAVE_PATH}/${pdfName}.${page}.${this.PDF2PIC_IMG_FORMAT}`;
     const fileNameParsed = path.parse(fullFileName);
 
     return fileNameParsed;
   }
 
-  getPdfJSON(pdf: Buffer): Promise<PDFJson> {
-    const pdfParser = new PDFParser();
-    return new Promise((resolve, reject) => {
-      // why do i have to assign these to use them in the listeners
-      const res = resolve;
-      const rej = reject;
-
-      // not sure why they made these listeners not just promises...
-      pdfParser.on('pdfParser_dataReady', (pdfData: PDFJson) => {
-        resolve(pdfData);
-      });
-      pdfParser.on('pdfParser_dataError', (errData: any) => {
-        reject(errData);
-      });
-      pdfParser.parseBuffer(pdf);
+  async getPdfSizeData(pdf: Buffer, page: number) {
+    const pdfDoc = await PDFDocument.load(pdf, {
+      updateMetadata: false,
     });
+    const pdfPage = pdfDoc.getPage(page);
+    const size = pdfPage.getSize(); // dimensions are supposedly in points...
+    const pdfSizeData = { ...size, ratio: size.width / size.height };
+    return pdfSizeData;
   }
 
-  getPdfDimensions(
-    pdfJSON: PDFJson,
-    pageIndex: number
-  ): { width: number; height: number; ratio: number } {
-    // Page unit equals (96px/inch * 1inch / 4) = 24px/inch. See pdf2json/lib/pdfunit.js
-    const pixelsPerInch = 24;
-
-    const width = pdfJSON.formImage.Width * pixelsPerInch;
-    const height = pdfJSON.formImage.Pages[pageIndex].Height * pixelsPerInch;
+  getPdfDimensions(pageDimensions: {
+    width: number;
+    height: number;
+  }): { width: number; height: number; ratio: number } {
+    // TODO: Get real data here? Save read data here?!
+    const width = pageDimensions.width;
+    const height = pageDimensions.height;
     const ratio = width / height;
     return { width, height, ratio };
   }
