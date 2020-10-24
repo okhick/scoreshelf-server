@@ -1,8 +1,5 @@
 import { AssetDB } from './controllers/asset-db';
-import { Asset2Thumbnail } from './middleware/asset2thumbnail';
 import { AssetProcessing } from './middleware/asset-processing';
-
-import { readFileSync, statSync, rmdirSync } from 'fs';
 
 import { Application, Request, Response } from 'express';
 import { AssetDataRequest, DeleteAssetRequest } from './@types';

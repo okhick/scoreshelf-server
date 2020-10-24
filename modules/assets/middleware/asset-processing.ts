@@ -50,10 +50,10 @@ export class AssetProcessing {
     const deletedFiles: String[] = [];
     await Promise.all(
       assets.filesToRemove.map(async (file) => {
-        await assetDb.deleteAssetData(file._id);
-        await assetIo.deleteAssetFile(
-          `${file.sharetribe_user_id}/${file.sharetribe_listing_id}/${file.asset_name}`
-        );
+        const assetToBeDeleted = await assetDb.deleteAssetData(file._id, 'asset');
+        if (assetToBeDeleted) {
+          await assetIo.deleteAssetFile(assetToBeDeleted);
+        }
         deletedFiles.push(file._id);
       })
     );
@@ -65,12 +65,8 @@ export class AssetProcessing {
     const assetIo = new AssetIO();
     const assetDb = new AssetDB();
 
-    const existingThumbnail = await assetDb.getAssetData({
-      ids: [upload.sharetribe_listing_id],
-      getLink: false,
-      getType: 'thumbnail',
-    });
-    console.log(existingThumbnail);
+    // delete anything that already exists
+    const thumbnailDeleted = await this.deleteThumbnail(upload);
 
     const tempThumbPath = await this.newThumbnail(upload);
     const thumbUpload: UploadThumbnailRequest = {
@@ -88,6 +84,21 @@ export class AssetProcessing {
     unlinkSync(format(tempThumbPath));
 
     return;
+  }
+
+  async deleteThumbnail(upload: UploadRequest) {
+    const assetIo = new AssetIO();
+    const assetDb = new AssetDB();
+
+    const thumbnailDeleted = await assetDb.deleteAssetData(
+      upload.sharetribe_listing_id,
+      'thumbnail'
+    );
+    if (thumbnailDeleted) {
+      assetIo.deleteAssetFile(thumbnailDeleted);
+    }
+
+    return thumbnailDeleted;
   }
 
   async newThumbnail(asset: UploadRequest) {

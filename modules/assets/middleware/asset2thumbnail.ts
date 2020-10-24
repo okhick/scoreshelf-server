@@ -42,7 +42,7 @@ export class Asset2Thumbnail {
     const pdfDoc = await PDFDocument.load(pdf, {
       updateMetadata: false,
     });
-    const pdfPage = pdfDoc.getPage(page);
+    const pdfPage = pdfDoc.getPage(page - 1);
     const size = pdfPage.getSize(); // dimensions are supposedly in points...
     const pdfSizeData = { ...size, ratio: size.width / size.height };
     return pdfSizeData;

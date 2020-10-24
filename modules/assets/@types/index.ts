@@ -58,6 +58,12 @@ export interface UploadThumbnailRequest {
   page: number;
 }
 
+export interface UploadParams {
+  file: Buffer;
+  key: string;
+  permissions: string;
+}
+
 export interface UpdateRequest {
   sharetribe_user_id: string;
   sharetribe_listing_id: string;

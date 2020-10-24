@@ -1,8 +1,7 @@
 import S3_SDK from 'aws-sdk/clients/s3';
 import { AWSError } from 'aws-sdk/lib/core';
 
-import { Asset, Thumbnail } from '../@types';
-import { UploadedFile } from 'express-fileupload';
+import { UploadParams } from '../@types';
 import { PromiseResult } from 'aws-sdk/lib/request';
 
 export class S3 {
@@ -24,15 +23,13 @@ export class S3 {
     return buckets;
   }
 
-  async uploadFile(
-    file: UploadedFile['data'],
-    fileName: string
-  ): Promise<S3_SDK.ManagedUpload.SendData> {
+  async uploadFile(params: UploadParams): Promise<S3_SDK.ManagedUpload.SendData> {
     const s3 = this.connectToStorage();
     const uploadParams = {
       Bucket: this.bucket,
-      Key: fileName,
-      Body: file,
+      Key: params.key,
+      Body: params.file,
+      ACL: params.permissions,
     };
 
     const res_upload = await s3.upload(uploadParams).promise();
@@ -50,11 +47,12 @@ export class S3 {
     return res_delete;
   }
 
-  getSignedUrl(asset: Asset | Thumbnail): string {
+  getSignedUrl(key: string): string {
     const s3 = this.connectToStorage();
+
     const params = {
       Bucket: this.bucket,
-      Key: `${asset.sharetribe_user_id}/${asset.sharetribe_listing_id}/${asset.asset_name}`,
+      Key: key,
     };
     const link = s3.getSignedUrl('getObject', params);
     return link;

@@ -1,5 +1,5 @@
 import { AssetModel, ThumbnailModel } from '../models/Asset';
-import { S3 } from '../middleware/s3';
+import { AssetIO } from './asset-io';
 
 import {
   Asset,
@@ -27,10 +27,11 @@ export class AssetDB {
   }
 
   async saveThumbnailData(upload: UploadThumbnailRequest): Promise<Thumbnail> {
+    const assetIo = new AssetIO();
     const newThumbnail = new ThumbnailModel({
       sharetribe_user_id: upload.sharetribe_user_id,
       sharetribe_listing_id: upload.sharetribe_listing_id,
-      asset_name: `thumb.${upload.filename}`,
+      asset_name: `${assetIo.THUMBNAIL_PREFIX}.${upload.filename}`,
       page: upload.page,
     });
     const newThumbnailRes = await newThumbnail.save();
@@ -45,14 +46,15 @@ export class AssetDB {
           switch (dataRequest.getType) {
             case 'asset':
               assetData = await AssetModel.findById(id);
+              if (dataRequest.getLink && assetData != null) {
+                const assetIo = new AssetIO();
+                assetData.link = assetIo.getSignedUrl(assetData);
+              }
               break;
 
             case 'thumbnail':
               assetData = await ThumbnailModel.findOne({ sharetribe_listing_id: id });
               break;
-          }
-          if (dataRequest.getLink && assetData != null) {
-            assetData.link = this.getSignedUrl(assetData);
           }
           return assetData;
         }
@@ -82,14 +84,16 @@ export class AssetDB {
     );
   }
 
-  async deleteAssetData(id: string): Promise<Asset | null> {
-    let res = await AssetModel.findOneAndDelete({ _id: id });
+  async deleteAssetData(id: string, deleteType: string): Promise<Asset | Thumbnail | null> {
+    let res = null;
+    switch (deleteType) {
+      case 'asset':
+        res = await AssetModel.findOneAndDelete({ _id: id });
+        break;
+      case 'thumbnail':
+        res = await ThumbnailModel.findOneAndDelete({ sharetribe_listing_id: id });
+        break;
+    }
     return res;
-  }
-
-  getSignedUrl(assetData: Asset | Thumbnail): string {
-    const s3 = new S3();
-    const link = s3.getSignedUrl(assetData);
-    return link;
   }
 }
