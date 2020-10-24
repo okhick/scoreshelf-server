@@ -1,6 +1,6 @@
 import { ManagedUpload } from 'aws-sdk/clients/s3';
 import { S3 } from '../middleware/s3';
-import { Asset, Thumbnail, UploadRequest, UploadThumbnailRequest } from '../@types';
+import { Asset, GenericAsset, UploadRequest, UploadThumbnailRequest } from '../@types';
 import { AssetModel, ThumbnailModel } from '../models/Asset';
 
 export class AssetIO {
@@ -36,7 +36,7 @@ export class AssetIO {
     return upload_res;
   }
 
-  async deleteAssetFile(file: Asset | Thumbnail) {
+  async deleteFile(file: GenericAsset) {
     const s3 = new S3();
 
     let res;

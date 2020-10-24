@@ -1,21 +1,22 @@
-version: "3"
+version: '3'
 
 services:
   node:
     container_name: scoreshelf_server
     image: scoreshelf_server:latest
-    entrypoint: ["npm", "run", "dev"]
+    entrypoint: ['npm', 'run', 'dev']
     tty: true
     ports:
       - 3000:3000
-    working_dir: "/var/server/"
+      - 9229:9229
+    working_dir: '/var/server/'
     volumes:
       - ./:/var/server
-  
+
   # mongoDB:
   #   container_name: mongo
   #   image: mongo:4.2-bionic
-  #   volumes: 
+  #   volumes:
   #     - ./.db/mongo:/data/db
   #   restart: always
   #   ports:

@@ -7,7 +7,7 @@ export class Asset2Thumbnail {
   // Some constants
   PDF2PIC_DENSITY = 300;
   PDF2PIC_IMG_FORMAT = 'png';
-  PDF2PIC_TEMP_SAVE_PATH = '/var/server/temp';
+  PDF2PIC_TEMP_SAVE_PATH = './temp';
   PDF2PIC_LONG_SIDE = 900;
 
   async makePdfThumbnail(pdf: Buffer, pdfName: string, page: number): Promise<ParsedPath> {

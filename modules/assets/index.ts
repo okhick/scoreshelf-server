@@ -2,7 +2,7 @@ import { AssetDB } from './controllers/asset-db';
 import { AssetProcessing } from './middleware/asset-processing';
 
 import { Application, Request, Response } from 'express';
-import { AssetDataRequest, DeleteAssetRequest } from './@types';
+import { Asset, AssetDataRequest } from './@types';
 
 module.exports = function (app: Application) {
   app.post('/uploadAssets', async (req: Request, res: Response) => {
@@ -19,7 +19,7 @@ module.exports = function (app: Application) {
   app.delete('/deleteAssets', async (req: Request, res: Response) => {
     const assetProcessing = new AssetProcessing();
 
-    const receivedBody: DeleteAssetRequest = req.body;
+    const receivedBody: Asset[] = req.body.filesToRemove;
     const deletedFiles: String[] = await assetProcessing.deleteAssets(receivedBody);
 
     return res.json(deletedFiles);
