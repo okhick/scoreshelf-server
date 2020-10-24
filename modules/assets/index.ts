@@ -40,8 +40,9 @@ module.exports = function (app: Application) {
 
     const receivedBody = req.body;
     const dataRequest: AssetDataRequest = {
-      scoreshelf_ids: receivedBody.scoreshelf_ids,
+      ids: receivedBody.scoreshelf_ids,
       getLink: receivedBody.get_link,
+      getType: 'asset',
     };
 
     let assetData = await assetDb.getAssetData(dataRequest);

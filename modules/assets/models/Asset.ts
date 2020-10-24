@@ -6,12 +6,12 @@ const assetSchema = new Schema({
   sharetribe_listing_id: String,
   asset_name: String,
   size: Number,
-  date_added: { type: Date, default: Date.now },
   link: String,
   thumbnail_settings: {
     isThumbnail: Boolean,
     page: Number,
   },
+  date_added: { type: Date, default: Date.now },
 });
 
 const thumbnailSchema = new Schema({
@@ -19,6 +19,7 @@ const thumbnailSchema = new Schema({
   sharetribe_listing_id: String,
   asset_name: String,
   page: Number,
+  link: String,
   date_added: { type: Date, default: Date.now },
 });
 

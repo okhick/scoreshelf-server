@@ -20,11 +20,13 @@ export interface Thumbnail extends Document {
   sharetribe_listing_id: string;
   asset_name: string;
   date_added: Date;
+  link?: string | null;
 }
 
 export interface AssetDataRequest {
-  scoreshelf_ids: string[];
+  ids: string[];
   getLink: boolean;
+  getType: 'asset' | 'thumbnail';
 }
 
 export interface DeleteAssetRequest {

@@ -65,6 +65,13 @@ export class AssetProcessing {
     const assetIo = new AssetIO();
     const assetDb = new AssetDB();
 
+    const existingThumbnail = await assetDb.getAssetData({
+      ids: [upload.sharetribe_listing_id],
+      getLink: false,
+      getType: 'thumbnail',
+    });
+    console.log(existingThumbnail);
+
     const tempThumbPath = await this.newThumbnail(upload);
     const thumbUpload: UploadThumbnailRequest = {
       file: readFileSync(format(tempThumbPath)),

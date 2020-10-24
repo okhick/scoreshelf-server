@@ -1,7 +1,7 @@
 import S3_SDK from 'aws-sdk/clients/s3';
 import { AWSError } from 'aws-sdk/lib/core';
 
-import { Asset } from '../@types';
+import { Asset, Thumbnail } from '../@types';
 import { UploadedFile } from 'express-fileupload';
 import { PromiseResult } from 'aws-sdk/lib/request';
 
@@ -46,11 +46,11 @@ export class S3 {
       Key: fileName,
     };
 
-    const res_delete = await s3.deleteObject(deleteParams).promise()
+    const res_delete = await s3.deleteObject(deleteParams).promise();
     return res_delete;
   }
 
-  getSignedUrl(asset: Asset): string {
+  getSignedUrl(asset: Asset | Thumbnail): string {
     const s3 = this.connectToStorage();
     const params = {
       Bucket: this.bucket,

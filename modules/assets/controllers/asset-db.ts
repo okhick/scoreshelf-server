@@ -37,15 +37,22 @@ export class AssetDB {
     return newThumbnailRes;
   }
 
-  async getAssetData(dataRequest: AssetDataRequest): Promise<(Asset | null)[]> {
+  async getAssetData(dataRequest: AssetDataRequest): Promise<(Asset | Thumbnail | null)[]> {
     return Promise.all(
-      dataRequest.scoreshelf_ids.map(
-        async (id): Promise<Asset | null> => {
-          const assetData = await AssetModel.findById(id);
+      dataRequest.ids.map(
+        async (id): Promise<Asset | Thumbnail | null> => {
+          let assetData;
+          switch (dataRequest.getType) {
+            case 'asset':
+              assetData = await AssetModel.findById(id);
+              break;
+
+            case 'thumbnail':
+              assetData = await ThumbnailModel.findOne({ sharetribe_listing_id: id });
+              break;
+          }
           if (dataRequest.getLink && assetData != null) {
-            const s3 = new S3();
-            const link = s3.getSignedUrl(assetData);
-            assetData.link = link;
+            assetData.link = this.getSignedUrl(assetData);
           }
           return assetData;
         }
@@ -78,5 +85,11 @@ export class AssetDB {
   async deleteAssetData(id: string): Promise<Asset | null> {
     let res = await AssetModel.findOneAndDelete({ _id: id });
     return res;
+  }
+
+  getSignedUrl(assetData: Asset | Thumbnail): string {
+    const s3 = new S3();
+    const link = s3.getSignedUrl(assetData);
+    return link;
   }
 }
