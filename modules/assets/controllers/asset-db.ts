@@ -62,29 +62,41 @@ export class AssetDB {
 
   async updateAssetData(newData: UpdateRequest) {
     // right now this just updates thumbnail data
-    const scoreshelf_ids = Object.keys(newData.thumbnailSettings);
-
+    const scoreshelf_ids = Object.keys(newData.metadata);
+    const updatedMetadata: any = {};
     return Promise.all(
       scoreshelf_ids.map(
-        async (id): Promise<Asset | boolean> => {
-          return this.updateThumbnailData(id, newData);
+        async (id): Promise<any | null> => {
+          updatedMetadata[id] = {
+            newThumbnailData: await this.updateThumbnailData(
+              id,
+              newData.metadata[id].thumbnailSettings
+            ),
+            // do more updating here
+          };
+          return updatedMetadata;
         }
       )
     );
   }
 
-  async updateThumbnailData(id: string, newData: UpdateRequest) {
-    let newAssetData = newData.thumbnailSettings[id];
-    let thisAssetDoc = await AssetModel.findOne({ _id: id });
+  async updateThumbnailData(asset_id: string, newAssetData: any): Promise<Thumbnail | null> {
+    // if it's not a thumbnail delete
+    if (!newAssetData.isThumbnail) {
+      await this.deleteAssetData(newAssetData.thumbnail_id, 'thumbnail');
+      await AssetModel.updateOne({ _id: asset_id }, { thumbnail_settings: undefined });
+      return null;
+    }
 
-    // if (thisAssetDoc != null) {
-    //   thisAssetDoc.thumbnail_settings = newAssetData;
-    //   const thumbnailDoc = await ThumbnailModel.findById(thisAssetDoc.thumbnail_settings);
-    //   const updatedAsset = await thisAssetDoc.save();
-    //   return updatedAsset;
-    // }
+    let thumbnailDoc = await ThumbnailModel.findOne({ _id: newAssetData.thumbnail_id });
 
-    return false;
+    if (thumbnailDoc != null) {
+      thumbnailDoc.page = newAssetData.page;
+      const newThumbnailDoc = await thumbnailDoc.save();
+      return newThumbnailDoc;
+    }
+
+    return thumbnailDoc;
   }
 
   async deleteAssetData(id: string, deleteType: string): Promise<GenericAsset | null> {

@@ -15,6 +15,8 @@ export class AssetProcessing {
 
     const response: UploadResponse = {};
 
+    console.log(data);
+
     if (assets) {
       const assetKeys = Object.keys(assets);
       await Promise.all(
@@ -23,7 +25,7 @@ export class AssetProcessing {
             file: assets[assetKey],
             sharetribe_user_id: data.sharetribe_user_id,
             sharetribe_listing_id: data.sharetribe_listing_id,
-            thumbnailSettings: data.thumbnailSettings[assets[assetKey].name],
+            thumbnailSettings: data.metadata[assets[assetKey].name].thumbnailSettings,
           };
 
           response[upload.file.name] = { _id: '' };
