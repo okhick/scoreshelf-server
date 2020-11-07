@@ -2,7 +2,7 @@ import { AssetDB } from './controllers/asset-db';
 import { AssetProcessing } from './middleware/asset-processing';
 
 import { Application, Request, Response } from 'express';
-import { Asset, AssetDataRequest } from './@types';
+import { Asset, AssetDataRequest, UpdateThumbnailResponse } from './@types';
 
 module.exports = function (app: Application) {
   app.post('/uploadAssets', async (req: Request, res: Response) => {
@@ -29,9 +29,9 @@ module.exports = function (app: Application) {
     const assetDb = new AssetDB();
     const assetProcessing = new AssetProcessing();
 
-    const newThumbnail = await assetDb.checkForNewThumbnail(req.body);
-    console.log('Needs new thumb: ', newThumbnail);
-    if (newThumbnail) {
+    const needNewThumbnail = await assetDb.checkForNewThumbnail(req.body);
+    let newThumbnail: UpdateThumbnailResponse = false;
+    if (needNewThumbnail) {
       await assetProcessing.makeNewThumbnail(req.body);
     }
 
