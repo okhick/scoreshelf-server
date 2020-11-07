@@ -57,4 +57,19 @@ export class S3 {
     const link = s3.getSignedUrl('getObject', params);
     return link;
   }
+
+  async getObject(key: string): Promise<S3_SDK.GetObjectOutput | undefined> {
+    const s3 = this.connectToStorage();
+
+    try {
+      const params = {
+        Bucket: this.bucket,
+        Key: key,
+      };
+      const object = await s3.getObject(params).promise();
+      return object;
+    } catch (e) {
+      console.log('Could not download asset', e);
+    }
+  }
 }

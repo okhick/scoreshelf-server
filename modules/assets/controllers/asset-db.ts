@@ -8,8 +8,10 @@ import {
   UploadRequest,
   UpdateRequest,
   UploadThumbnailRequest,
+  UpdateThumbnailRequest,
   GenericAsset,
 } from '../@types';
+import { AssetAttributes } from 'aws-sdk/clients/inspector';
 
 export class AssetDB {
   async saveAssetData(upload: UploadRequest): Promise<Asset> {
@@ -36,10 +38,10 @@ export class AssetDB {
     return newThumbnailRes;
   }
 
-  async getAssetData(dataRequest: AssetDataRequest): Promise<(GenericAsset | null)[]> {
+  async getAssetData(dataRequest: AssetDataRequest): Promise<(Asset | Thumbnail | null)[]> {
     return Promise.all(
       dataRequest.ids.map(
-        async (id): Promise<GenericAsset | null> => {
+        async (id): Promise<Asset | Thumbnail | null> => {
           let assetData;
           switch (dataRequest.getType) {
             case 'asset':
@@ -78,6 +80,32 @@ export class AssetDB {
         }
       )
     );
+  }
+
+  // Use to find out if the asset is the same, but the page has changed
+  async checkForNewThumbnail(newData: UpdateRequest): Promise<boolean> {
+    const metadata = newData.metadata;
+
+    const listingAssets = await AssetModel.find({
+      sharetribe_listing_id: newData.sharetribe_listing_id,
+    }).exec();
+
+    // This is a new product,
+    if (listingAssets == undefined) return true;
+
+    // There are no current thumbnails
+    const gatherThumbnailSettings = listingAssets.map((listing) => listing.thumbnail_settings);
+    const thereAreNoThumbnails = gatherThumbnailSettings.every((listing) => listing === null);
+    if (thereAreNoThumbnails) return true;
+
+    // if old page matched new page nothing needs to be done
+    const newThumbsNeeded = listingAssets.map((asset) => {
+      if (asset.thumbnail_settings?.page === metadata[asset._id].thumbnailSettings.page) {
+        return false;
+      }
+    });
+    // if anything in the array is true, return true
+    return newThumbsNeeded.some((currentValue) => currentValue);
   }
 
   async updateThumbnailData(asset_id: string, newAssetData: any): Promise<Thumbnail | null> {

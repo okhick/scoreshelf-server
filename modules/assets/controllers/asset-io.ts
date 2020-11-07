@@ -57,4 +57,12 @@ export class AssetIO {
     const link = s3.getSignedUrl(key);
     return link;
   }
+
+  // only handle asset downloading, not generated
+  async getAsset(assetData: GenericAsset) {
+    const s3 = new S3();
+    const key = `${this.ASSET_BASE}/${assetData.sharetribe_user_id}/${assetData.sharetribe_listing_id}/${assetData.asset_name}`;
+    const object = await s3.getObject(key);
+    return <Buffer>object?.Body;
+  }
 }

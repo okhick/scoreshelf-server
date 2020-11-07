@@ -27,8 +27,16 @@ module.exports = function (app: Application) {
 
   app.post('/updateAssetMetadata', async (req: Request, res: Response) => {
     const assetDb = new AssetDB();
+    const assetProcessing = new AssetProcessing();
+
+    const newThumbnail = await assetDb.checkForNewThumbnail(req.body);
+    console.log('Needs new thumb: ', newThumbnail);
+    if (newThumbnail) {
+      await assetProcessing.makeNewThumbnail(req.body);
+    }
 
     const updateRes = await assetDb.updateAssetData(req.body);
+
     return res.json(updateRes);
   });
 

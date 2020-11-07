@@ -44,6 +44,18 @@ export interface UploadThumbnailRequest {
   page: number;
 }
 
+export interface UpdateThumbnailRequest {
+  _id: string;
+  thumbnail_id: string;
+  hasNewPage: boolean;
+  newPage?: number;
+}
+
+export interface UpdateThumbnailResponse {
+  _id: string;
+  thumbnail: Thumbnail;
+}
+
 export interface UploadParams {
   file: Buffer;
   key: string;
