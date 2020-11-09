@@ -29,11 +29,6 @@ export interface UploadRequest {
   file: UploadedFile;
   sharetribe_user_id: string;
   sharetribe_listing_id: string;
-  thumbnailSettings: {
-    thumbnail_id?: string | null;
-    isThumbnail: boolean;
-    page: number;
-  };
 }
 
 export interface UploadThumbnailRequest {
@@ -52,8 +47,8 @@ export interface UpdateThumbnailRequest {
 }
 
 export interface UpdateThumbnailResponse {
-  _id: string;
-  thumbnail: Thumbnail;
+  _id: any;
+  thumbnail: Thumbnail | undefined;
 }
 
 export interface UploadParams {

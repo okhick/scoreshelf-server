@@ -1,26 +1,28 @@
 import { AssetModel, ThumbnailModel } from '../models/Asset';
 import { AssetIO } from './asset-io';
+import mongoose from 'mongoose';
 
 import {
   Asset,
   Thumbnail,
   AssetDataRequest,
   UploadRequest,
-  UpdateRequest,
   UploadThumbnailRequest,
-  UpdateThumbnailRequest,
   GenericAsset,
+  UpdateThumbnailResponse,
 } from '../@types';
-import { AssetAttributes } from 'aws-sdk/clients/inspector';
 
 export class AssetDB {
+  // =============================
+  // ========== Setters ==========
+  // =============================
+
   async saveAssetData(upload: UploadRequest): Promise<Asset> {
     const newAsset = new AssetModel({
       sharetribe_user_id: upload.sharetribe_user_id,
       sharetribe_listing_id: upload.sharetribe_listing_id,
       asset_name: upload.file.name,
       size: upload.file.size,
-      thumbnail_settings: upload.thumbnailSettings.thumbnail_id,
     });
     const newAssetRes = await newAsset.save();
     return newAssetRes;
@@ -37,6 +39,26 @@ export class AssetDB {
     const newThumbnailRes = await newThumbnail.save();
     return newThumbnailRes;
   }
+
+  async updateThumbnailData(
+    assetsToUpdate: Asset[],
+    updatedThumbnails: UpdateThumbnailResponse[]
+  ): Promise<Asset[]> {
+    const updatedAssets = await Promise.all(
+      assetsToUpdate.map(async (asset) => {
+        const newThumbnailFilter = updatedThumbnails.filter((thumb) => asset._id.equals(thumb._id));
+        const newThumbnail = newThumbnailFilter[0].thumbnail;
+        asset.thumbnail_settings = newThumbnail;
+        return await asset.save();
+      })
+    );
+
+    return updatedAssets;
+  }
+
+  // =============================
+  // ========== Getters ==========
+  // =============================
 
   async getAssetData(dataRequest: AssetDataRequest): Promise<(Asset | Thumbnail | null)[]> {
     return Promise.all(
@@ -62,70 +84,16 @@ export class AssetDB {
     );
   }
 
-  async updateAssetData(newData: UpdateRequest) {
-    // right now this just updates thumbnail data
-    const scoreshelf_ids = Object.keys(newData.metadata);
-    const updatedMetadata: any = {};
-    return Promise.all(
-      scoreshelf_ids.map(
-        async (id): Promise<any | null> => {
-          updatedMetadata[id] = {
-            newThumbnailData: await this.updateThumbnailData(
-              id,
-              newData.metadata[id].thumbnailSettings
-            ),
-            // do more updating here
-          };
-          return updatedMetadata;
-        }
-      )
+  async getAssetDataByListing(sharetribe_listing_id: string) {
+    const assets = await AssetModel.find({ sharetribe_listing_id: sharetribe_listing_id }).populate(
+      'thumbnail_settings'
     );
+    return assets;
   }
 
-  // Use to find out if the asset is the same, but the page has changed
-  async checkForNewThumbnail(newData: UpdateRequest): Promise<boolean> {
-    const metadata = newData.metadata;
-
-    const listingAssets = await AssetModel.find({
-      sharetribe_listing_id: newData.sharetribe_listing_id,
-    }).exec();
-
-    // This is a new product,
-    if (listingAssets == undefined) return true;
-
-    // There are no current thumbnails
-    const gatherThumbnailSettings = listingAssets.map((listing) => listing.thumbnail_settings);
-    const thereAreNoThumbnails = gatherThumbnailSettings.every((listing) => listing === null);
-    if (thereAreNoThumbnails) return true;
-
-    // if old page matched new page nothing needs to be done
-    const newThumbsNeeded = listingAssets.map((asset) => {
-      if (asset.thumbnail_settings?.page === metadata[asset._id].thumbnailSettings.page) {
-        return false;
-      }
-    });
-    // if anything in the array is true, return true
-    return newThumbsNeeded.some((currentValue) => currentValue);
-  }
-
-  async updateThumbnailData(asset_id: string, newAssetData: any): Promise<Thumbnail | null> {
-    // if it's not a thumbnail delete
-    if (!newAssetData.isThumbnail) {
-      await this.deleteAssetData(newAssetData.thumbnail_id, 'thumbnail');
-      await AssetModel.updateOne({ _id: asset_id }, { thumbnail_settings: undefined });
-      return null;
-    }
-
-    let thumbnailDoc = await ThumbnailModel.findOne({ _id: newAssetData.thumbnail_id });
-
-    if (thumbnailDoc != null) {
-      thumbnailDoc.page = newAssetData.page;
-      const newThumbnailDoc = await thumbnailDoc.save();
-      return newThumbnailDoc;
-    }
-
-    return thumbnailDoc;
-  }
+  // ==============================
+  // ========== Deleters ==========
+  // ==============================
 
   async deleteAssetData(id: string, deleteType: string): Promise<GenericAsset | null> {
     let res = null;

@@ -28,16 +28,26 @@ module.exports = function (app: Application) {
   app.post('/updateAssetMetadata', async (req: Request, res: Response) => {
     const assetDb = new AssetDB();
     const assetProcessing = new AssetProcessing();
+    const request = req.body;
+    // const response = {};
 
-    const needNewThumbnail = await assetDb.checkForNewThumbnail(req.body);
-    let newThumbnail: UpdateThumbnailResponse = false;
-    if (needNewThumbnail) {
-      await assetProcessing.makeNewThumbnail(req.body);
+    // get all assets related to this listing
+    let assetsToUpdate = <Asset[]>(
+      await assetDb.getAssetDataByListing(request.sharetribe_listing_id)
+    );
+
+    // update the thumbnail
+    const needThumbnailUpdate = await assetProcessing.checkForNewThumbnail(request, assetsToUpdate);
+    if (needThumbnailUpdate) {
+      const thumbnailUpdate = await assetProcessing.updateThumbnail(request, assetsToUpdate);
+      // update assets and replace assetToUpdate with fresh data
+      assetsToUpdate = await assetDb.updateThumbnailData(assetsToUpdate, thumbnailUpdate);
     }
 
-    const updateRes = await assetDb.updateAssetData(req.body);
+    // ...do more updating here
 
-    return res.json(updateRes);
+    // return full list of assets for this listing for any updating needed
+    return res.json(assetsToUpdate);
   });
 
   app.post('/getAssetData', async (req: Request, res: Response) => {
