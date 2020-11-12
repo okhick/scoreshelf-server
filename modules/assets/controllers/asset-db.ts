@@ -34,6 +34,8 @@ export class AssetDB {
       sharetribe_user_id: upload.sharetribe_user_id,
       sharetribe_listing_id: upload.sharetribe_listing_id,
       asset_name: `${assetIo.THUMBNAIL_PREFIX}.${upload.filename}`,
+      height: upload.height,
+      width: upload.width,
       page: upload.page,
     });
     const newThumbnailRes = await newThumbnail.save();
