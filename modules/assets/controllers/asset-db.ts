@@ -75,7 +75,7 @@ export class AssetDB {
               break;
 
             case 'thumbnail':
-              assetData = await ThumbnailModel.findOne({ sharetribe_listing_id: id });
+              assetData = await ThumbnailModel.findOne({ _id: id });
               break;
           }
           return assetData;

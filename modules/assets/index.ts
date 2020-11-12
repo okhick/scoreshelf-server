@@ -60,8 +60,22 @@ module.exports = function (app: Application) {
       getType: 'asset',
     };
 
-    let assetData = await assetDb.getAssetData(dataRequest);
+    const assetData = await assetDb.getAssetData(dataRequest);
     res.json(assetData);
+  });
+
+  app.post('/getThumbnailData', async (req: Request, res: Response) => {
+    const assetDb = new AssetDB();
+
+    const receivedBody = req.body;
+    const dataRequest: AssetDataRequest = {
+      ids: receivedBody.scoreshelf_ids,
+      getLink: false,
+      getType: 'thumbnail',
+    };
+
+    const thumbnailData = await assetDb.getAssetData(dataRequest);
+    res.json(thumbnailData);
   });
 
   // app.get('/testpdfparse', async (req: Request, res: Response) => {
