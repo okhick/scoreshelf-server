@@ -1,9 +1,22 @@
-import AssetModel from '../models/Asset';
-import { S3 } from '../middleware/s3';
+import { AssetModel, ThumbnailModel } from '../models/Asset';
+import { AssetIO } from './asset-io';
+import mongoose from 'mongoose';
 
-import { Asset, AssetDataRequest, UploadRequest } from '../types';
+import {
+  Asset,
+  Thumbnail,
+  AssetDataRequest,
+  UploadRequest,
+  UploadThumbnailRequest,
+  GenericAsset,
+  UpdateThumbnailResponse,
+} from '../@types';
 
 export class AssetDB {
+  // =============================
+  // ========== Setters ==========
+  // =============================
+
   async saveAssetData(upload: UploadRequest): Promise<Asset> {
     const newAsset = new AssetModel({
       sharetribe_user_id: upload.sharetribe_user_id,
@@ -15,22 +28,85 @@ export class AssetDB {
     return newAssetRes;
   }
 
-  async getAssetData(dataRequest: AssetDataRequest): Promise<(Asset|null)[]> {
-    return Promise.all(
-      dataRequest.scoreshelf_ids.map(async (id): Promise<Asset|null> => {
-        const assetData = await AssetModel.findById(id);
-        if (dataRequest.getLink && assetData != null) { 
-          const s3 = new S3();
-          const link = s3.getSignedUrl(assetData);
-          assetData.link = link;
-        }
-        return assetData;
+  async saveThumbnailData(upload: UploadThumbnailRequest): Promise<Thumbnail> {
+    const assetIo = new AssetIO();
+    const newThumbnail = new ThumbnailModel({
+      sharetribe_user_id: upload.sharetribe_user_id,
+      sharetribe_listing_id: upload.sharetribe_listing_id,
+      asset_name: `${assetIo.THUMBNAIL_PREFIX}.${upload.filename}`,
+      height: upload.height,
+      width: upload.width,
+      page: upload.page,
+    });
+    const newThumbnailRes = await newThumbnail.save();
+    return newThumbnailRes;
+  }
+
+  async updateThumbnailData(
+    assetsToUpdate: Asset[],
+    updatedThumbnails: UpdateThumbnailResponse[]
+  ): Promise<Asset[]> {
+    const updatedAssets = await Promise.all(
+      assetsToUpdate.map(async (asset) => {
+        const newThumbnailFilter = updatedThumbnails.filter((thumb) => asset._id.equals(thumb._id));
+        const newThumbnail = newThumbnailFilter[0].thumbnail;
+        asset.thumbnail_settings = newThumbnail;
+        return await asset.save();
       })
+    );
+
+    return updatedAssets;
+  }
+
+  // =============================
+  // ========== Getters ==========
+  // =============================
+
+  async getAssetData(dataRequest: AssetDataRequest): Promise<(Asset | Thumbnail | null)[]> {
+    return Promise.all(
+      dataRequest.ids.map(
+        async (id): Promise<Asset | Thumbnail | null> => {
+          let assetData;
+          switch (dataRequest.getType) {
+            case 'asset':
+              assetData = await AssetModel.findById(id).populate('thumbnail_settings');
+              if (dataRequest.getLink && assetData != null) {
+                const assetIo = new AssetIO();
+                assetData.link = assetIo.getSignedUrl(assetData);
+              }
+              break;
+
+            case 'thumbnail':
+              assetData = await ThumbnailModel.findById(id);
+              break;
+          }
+          return assetData;
+        }
+      )
     );
   }
 
-  async deleteAssetData(id: string): Promise<Asset|null> {
-    let res = await AssetModel.findOneAndDelete({_id: id});
+  async getAssetDataByListing(sharetribe_listing_id: string) {
+    const assets = await AssetModel.find({ sharetribe_listing_id: sharetribe_listing_id }).populate(
+      'thumbnail_settings'
+    );
+    return assets;
+  }
+
+  // ==============================
+  // ========== Deleters ==========
+  // ==============================
+
+  async deleteAssetData(id: string, deleteType: string): Promise<GenericAsset | null> {
+    let res = null;
+    switch (deleteType) {
+      case 'asset':
+        res = await AssetModel.findOneAndDelete({ _id: id }).populate('thumbnail_settings');
+        break;
+      case 'thumbnail':
+        res = await ThumbnailModel.findOneAndDelete({ _id: id });
+        break;
+    }
     return res;
   }
 }

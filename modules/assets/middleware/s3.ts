@@ -1,8 +1,7 @@
 import S3_SDK from 'aws-sdk/clients/s3';
 import { AWSError } from 'aws-sdk/lib/core';
 
-import { Asset } from '../types';
-import { UploadedFile } from 'express-fileupload';
+import { UploadParams } from '../@types';
 import { PromiseResult } from 'aws-sdk/lib/request';
 
 export class S3 {
@@ -10,10 +9,9 @@ export class S3 {
 
   connectToStorage(): S3_SDK {
     const instance = new S3_SDK({
-      accessKeyId: 'minio' ,
-      secretAccessKey: 'minio123' ,
-      endpoint: 'http://s3:9000' ,
-      s3ForcePathStyle: true, // needed with minio?
+      accessKeyId: 'HMEDIGOOYCMMPLUBGWUV',
+      secretAccessKey: 'XZqUFP8ZHiCFBqQsyioaa8tGfU8gNbzKdP3g0Tmzdt4',
+      endpoint: 'https://nyc3.digitaloceanspaces.com/',
     });
 
     return instance;
@@ -25,15 +23,16 @@ export class S3 {
     return buckets;
   }
 
-  async uploadFile(file: UploadedFile["data"], fileName: string): Promise<S3_SDK.ManagedUpload.SendData> {
+  async uploadFile(params: UploadParams): Promise<S3_SDK.ManagedUpload.SendData> {
     const s3 = this.connectToStorage();
-    const uploadParams = { 
-      Bucket: this.bucket, 
-      Key: fileName, 
-      Body: file 
+    const uploadParams = {
+      Bucket: this.bucket,
+      Key: params.key,
+      Body: params.file,
+      ACL: params.permissions,
     };
 
-    const res_upload = await s3.upload (uploadParams).promise();
+    const res_upload = await s3.upload(uploadParams).promise();
     return res_upload;
   }
 
@@ -41,20 +40,36 @@ export class S3 {
     const s3 = this.connectToStorage();
     const deleteParams = {
       Bucket: this.bucket,
-      Key: fileName
+      Key: fileName,
     };
 
     const res_delete = await s3.deleteObject(deleteParams).promise();
     return res_delete;
   }
 
-  getSignedUrl(asset: Asset): string {
+  getSignedUrl(key: string): string {
     const s3 = this.connectToStorage();
+
     const params = {
-      Bucket: this.bucket, 
-      Key: `${asset.sharetribe_user_id}/${asset.sharetribe_listing_id}/${asset.asset_name}`
+      Bucket: this.bucket,
+      Key: key,
     };
     const link = s3.getSignedUrl('getObject', params);
     return link;
+  }
+
+  async getObject(key: string): Promise<S3_SDK.GetObjectOutput | undefined> {
+    const s3 = this.connectToStorage();
+
+    try {
+      const params = {
+        Bucket: this.bucket,
+        Key: key,
+      };
+      const object = await s3.getObject(params).promise();
+      return object;
+    } catch (e) {
+      console.log('Could not download asset', e);
+    }
   }
 }
