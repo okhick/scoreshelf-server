@@ -1,7 +1,8 @@
 import { fromBase64 } from 'pdf2pic';
 import { existsSync, mkdirSync } from 'fs';
-import { parse, ParsedPath } from 'path';
+import { parse } from 'path';
 import { PDFDocument } from 'pdf-lib';
+import { RawThumbnail } from '../@types';
 
 export class Asset2Thumbnail {
   // Some constants
@@ -10,7 +11,7 @@ export class Asset2Thumbnail {
   PDF2PIC_TEMP_SAVE_PATH = './temp';
   PDF2PIC_LONG_SIDE = 900;
 
-  async makePdfThumbnail(pdf: Buffer, pdfName: string, page: number): Promise<ParsedPath> {
+  async makePdfThumbnail(pdf: Buffer, pdfName: string, page: number): Promise<RawThumbnail> {
     const pageDimensions = await this.getPdfSizeData(pdf, page);
     const imgDimensions = this.setImageDimensions(pageDimensions.ratio);
     const imageOptions = {
@@ -35,7 +36,11 @@ export class Asset2Thumbnail {
     const fullFileName = `${this.PDF2PIC_TEMP_SAVE_PATH}/${pdfName}.${page}.${this.PDF2PIC_IMG_FORMAT}`;
     const fileNameParsed = parse(fullFileName);
 
-    return fileNameParsed;
+    return {
+      path: fileNameParsed,
+      width: imgDimensions.width,
+      height: imgDimensions.height,
+    };
   }
 
   async getPdfSizeData(pdf: Buffer, page: number) {

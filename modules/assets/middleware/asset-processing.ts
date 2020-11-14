@@ -147,7 +147,7 @@ export class AssetProcessing {
     const asset2thumbnail = new Asset2Thumbnail();
 
     // create the new thumb by shelling out to Ghostscript or ImageMagik or something
-    const tempThumbPath = await asset2thumbnail.makePdfThumbnail(
+    const rawThumbnail = await asset2thumbnail.makePdfThumbnail(
       upload.file,
       parse(upload.filename).name,
       upload.page
@@ -155,17 +155,19 @@ export class AssetProcessing {
 
     // upload the file and save the data
     const thumbUpload: UploadThumbnailRequest = {
-      file: readFileSync(format(tempThumbPath)),
-      filename: tempThumbPath.base,
+      file: readFileSync(format(rawThumbnail.path)),
+      filename: rawThumbnail.path.base,
       sharetribe_user_id: upload.sharetribe_user_id,
       sharetribe_listing_id: upload.sharetribe_listing_id,
       page: upload.page,
+      height: rawThumbnail.height,
+      width: rawThumbnail.width,
     };
     const s3Res = await assetIo.saveThumbnailFile(thumbUpload);
     const mongoRes = await assetDb.saveThumbnailData(thumbUpload);
 
     // delete the temp file
-    unlinkSync(format(tempThumbPath));
+    unlinkSync(format(rawThumbnail.path));
 
     return mongoRes;
   }

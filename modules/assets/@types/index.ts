@@ -1,5 +1,6 @@
 import { UploadedFile } from 'express-fileupload';
 import { Document } from 'mongoose';
+import { ParsedPath } from 'path';
 
 // Extend the Mongoose document with Assest things
 export interface GenericAsset {
@@ -37,6 +38,8 @@ export interface UploadThumbnailRequest {
   sharetribe_user_id: string;
   sharetribe_listing_id: string;
   page: number;
+  height?: number;
+  width?: number;
 }
 
 export interface UpdateThumbnailRequest {
@@ -44,6 +47,12 @@ export interface UpdateThumbnailRequest {
   thumbnail_id: string;
   hasNewPage: boolean;
   newPage?: number;
+}
+
+export interface RawThumbnail {
+  path: ParsedPath;
+  width: number;
+  height: number;
 }
 
 export interface UpdateThumbnailResponse {
