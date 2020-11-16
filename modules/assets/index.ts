@@ -3,6 +3,7 @@ import { AssetProcessing } from './middleware/asset-processing';
 
 import { Application, Request, Response } from 'express';
 import { Asset, AssetDataRequest, UpdateThumbnailResponse } from './@types';
+import { AssetIO } from './controllers/asset-io';
 
 module.exports = function (app: Application) {
   app.post('/uploadAssets', async (req: Request, res: Response) => {
@@ -62,6 +63,20 @@ module.exports = function (app: Application) {
 
     const assetData = await assetDb.getAssetData(dataRequest);
     res.json(assetData);
+  });
+
+  app.post('/getAssetLink', async (req: Request, res: Response) => {
+    const assetDb = new AssetDB();
+
+    const receivedBody = req.body;
+    const dataRequest: AssetDataRequest = {
+      ids: [receivedBody.scoreshelf_id],
+      getLink: true,
+      getType: 'asset',
+    };
+    const assetData = <Asset[]>await assetDb.getAssetData(dataRequest);
+
+    return res.json(assetData[0].link);
   });
 
   app.post('/getThumbnailData', async (req: Request, res: Response) => {
