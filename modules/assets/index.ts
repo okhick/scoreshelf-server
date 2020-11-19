@@ -5,6 +5,8 @@ import { Application, Request, Response } from 'express';
 import { Asset, AssetDataRequest, UpdateThumbnailResponse } from './@types';
 import { AssetIO } from './controllers/asset-io';
 
+import mongoose from 'mongoose';
+
 module.exports = function (app: Application) {
   app.post('/uploadAssets', async (req: Request, res: Response) => {
     const assetProcessing = new AssetProcessing();
@@ -65,18 +67,24 @@ module.exports = function (app: Application) {
     res.json(assetData);
   });
 
-  app.post('/getAssetLink', async (req: Request, res: Response) => {
+  app.get('/getAssetBin', async (req: Request, res: Response) => {
     const assetDb = new AssetDB();
+    const assetIo = new AssetIO();
 
-    const receivedBody = req.body;
+    const scoreshelf_id = <string>req.query.scoreshelf_id;
+    console.log(req);
     const dataRequest: AssetDataRequest = {
-      ids: [receivedBody.scoreshelf_id],
-      getLink: true,
+      ids: [scoreshelf_id],
+      getLink: false,
       getType: 'asset',
     };
     const assetData = <Asset[]>await assetDb.getAssetData(dataRequest);
+    const assetBuffer = await assetIo.getAsset(assetData[0]);
 
-    return res.json(assetData[0].link);
+    res.writeHead(200, {
+      'Content-Type': 'application/pdf',
+    });
+    res.end(assetBuffer, 'binary');
   });
 
   app.post('/getThumbnailData', async (req: Request, res: Response) => {
