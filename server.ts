@@ -9,6 +9,7 @@ module.exports = app;
 // is this dependency injecting?
 // make sure to load the express before the routes otherwise things can get weird...
 require('./config/express')(app);
+require('./modules/auth')(app);
 require('./modules/assets')(app);
 
 connect();
