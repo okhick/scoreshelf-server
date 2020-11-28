@@ -2,7 +2,7 @@ import { Application, Request, Response } from 'express';
 import { Auth } from './controllers/auth';
 
 module.exports = function (app: Application) {
-  app.post('/auth/new-client', async (req: Request, res: Response) => {
+  app.post('/auth/newClient', async (req: Request, res: Response) => {
     const username = req.body.username;
     const auth = new Auth();
 
