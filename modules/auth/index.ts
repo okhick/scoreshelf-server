@@ -1,6 +1,8 @@
 import { Application, Request, Response } from 'express';
 import { Auth } from './controllers/auth';
 
+import bearerToken from 'express-bearer-token';
+
 module.exports = function (app: Application) {
   // app.post('/auth/newClient', async (req: Request, res: Response) => {
   //   const username = req.body.username;
@@ -9,6 +11,8 @@ module.exports = function (app: Application) {
   //   const newClient = await auth.newClient(username);
   //   res.json(newClient);
   // });
+
+  app.use(bearerToken());
 
   app.post('/auth/generateAuthCode', async (req: Request, res: Response) => {
     const auth = new Auth();

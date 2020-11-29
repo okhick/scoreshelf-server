@@ -5,10 +5,12 @@ import { Application, Request, Response } from 'express';
 import { Asset, AssetDataRequest, UpdateThumbnailResponse } from './@types';
 import { AssetIO } from './controllers/asset-io';
 
+import { verifyToken } from '../auth/middleware/verifyToken';
+
 import mongoose from 'mongoose';
 
 module.exports = function (app: Application) {
-  app.post('/uploadAssets', async (req: Request, res: Response) => {
+  app.post('/uploadAssets', verifyToken, async (req: Request, res: Response) => {
     const assetProcessing = new AssetProcessing();
 
     const receivedFiles = req.files;
@@ -19,7 +21,7 @@ module.exports = function (app: Application) {
     return res.json(response);
   });
 
-  app.delete('/deleteAssets', async (req: Request, res: Response) => {
+  app.delete('/deleteAssets', verifyToken, async (req: Request, res: Response) => {
     const assetProcessing = new AssetProcessing();
 
     const receivedBody: Asset[] = req.body.filesToRemove;
@@ -28,7 +30,7 @@ module.exports = function (app: Application) {
     return res.json(deletedFiles);
   });
 
-  app.post('/updateAssetMetadata', async (req: Request, res: Response) => {
+  app.post('/updateAssetMetadata', verifyToken, async (req: Request, res: Response) => {
     const assetDb = new AssetDB();
     const assetProcessing = new AssetProcessing();
     const request = req.body;
@@ -53,13 +55,12 @@ module.exports = function (app: Application) {
     return res.json(assetsToUpdate);
   });
 
-  app.post('/getAssetData', async (req: Request, res: Response) => {
+  app.get('/getAssetData', verifyToken, async (req: Request, res: Response) => {
     const assetDb = new AssetDB();
-
-    const receivedBody = req.body;
+    const receivedBody = req.query;
     const dataRequest: AssetDataRequest = {
-      ids: receivedBody.scoreshelf_ids,
-      getLink: receivedBody.get_link,
+      ids: <string[]>receivedBody.scoreshelf_ids,
+      getLink: JSON.parse(<string>receivedBody.get_link), //convert 'true' to boolean
       getType: 'asset',
     };
 
@@ -67,12 +68,12 @@ module.exports = function (app: Application) {
     res.json(assetData);
   });
 
-  app.get('/getAssetBin', async (req: Request, res: Response) => {
+  app.get('/getAssetBin', verifyToken, async (req: Request, res: Response) => {
     const assetDb = new AssetDB();
     const assetIo = new AssetIO();
 
     const scoreshelf_id = <string>req.query.scoreshelf_id;
-    console.log(req);
+
     const dataRequest: AssetDataRequest = {
       ids: [scoreshelf_id],
       getLink: false,
@@ -87,16 +88,15 @@ module.exports = function (app: Application) {
     res.end(assetBuffer, 'binary');
   });
 
-  app.post('/getThumbnailData', async (req: Request, res: Response) => {
+  app.get('/getThumbnailData', verifyToken, async (req: Request, res: Response) => {
     const assetDb = new AssetDB();
 
-    const receivedBody = req.body;
+    const scoreshelf_ids = <string[]>req.query.scoreshelf_ids;
     const dataRequest: AssetDataRequest = {
-      ids: receivedBody.scoreshelf_ids,
+      ids: scoreshelf_ids,
       getLink: false,
       getType: 'thumbnail',
     };
-
     const thumbnailData = await assetDb.getAssetData(dataRequest);
     res.json(thumbnailData);
   });

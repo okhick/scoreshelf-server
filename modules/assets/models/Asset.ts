@@ -17,11 +17,11 @@ const assetSchema = new Schema({
   asset_name: String,
   size: Number,
   link: String,
-  thumbnail_settings: { type: Schema.Types.ObjectId, ref: 'Generated' },
+  thumbnail_settings: { type: Schema.Types.ObjectId, ref: 'asset_generated' },
   date_added: { type: Date, default: Date.now },
 });
 
-export const AssetModel = mongoose.model<Asset>('Asset', assetSchema);
-export const ThumbnailModel = mongoose.model<Thumbnail>('Generated', thumbnailSchema);
+export const AssetModel = mongoose.model<Asset>('asset_asset', assetSchema);
+export const ThumbnailModel = mongoose.model<Thumbnail>('asset_generated', thumbnailSchema);
 
 // export default { AssetModel, ThumbnailModel };
