@@ -14,7 +14,7 @@ export interface AuthCode extends Document {
 }
 export interface AuthCodeRequest {
   client_id: string;
-  code_challange: string;
+  code_challenge: string;
 }
 export interface AuthCodeResponse {
   status: boolean;

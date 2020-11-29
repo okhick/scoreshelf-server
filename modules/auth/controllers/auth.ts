@@ -45,7 +45,7 @@ export class Auth {
 
   async newAuthCode(authCodeRequest: AuthCodeRequest): Promise<AuthCodeResponse> {
     // check if authorized client
-    const isValidClient = this.verifyClientId(authCodeRequest.client_id);
+    const isValidClient = await this.verifyClientId(authCodeRequest.client_id);
     if (!isValidClient) return { status: false, reason: this.REASONS.noClient };
 
     const authCode = cryptoRandomString({ length: 256, type: 'url-safe' });
@@ -54,7 +54,7 @@ export class Auth {
     const newAuthCode = await AuthCode.create({
       client_id: authCodeRequest.client_id,
       auth_code: authCode,
-      code_challenge: authCodeRequest.code_challange,
+      code_challenge: authCodeRequest.code_challenge,
       expires_at: expiration,
     });
 
@@ -63,7 +63,7 @@ export class Auth {
 
   async newAccessToken(accessTokenRequest: AccessTokenRequest): Promise<AccessTokenResponse> {
     // get the data for that auth code
-    const authCode = await AuthCode.findOne({
+    const authCode = await AuthCode.findOneAndDelete({
       auth_code: accessTokenRequest.auth_code,
       client_id: accessTokenRequest.client_id,
     });
