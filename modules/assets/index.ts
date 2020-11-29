@@ -2,12 +2,10 @@ import { AssetDB } from './controllers/asset-db';
 import { AssetProcessing } from './middleware/asset-processing';
 
 import { Application, Request, Response } from 'express';
-import { Asset, AssetDataRequest, UpdateThumbnailResponse } from './@types';
+import { Asset, AssetDataRequest } from './@types';
 import { AssetIO } from './controllers/asset-io';
 
 import { verifyToken } from '../auth/middleware/verifyToken';
-
-import mongoose from 'mongoose';
 
 module.exports = function (app: Application) {
   app.post('/uploadAssets', verifyToken, async (req: Request, res: Response) => {
@@ -40,7 +38,6 @@ module.exports = function (app: Application) {
     let assetsToUpdate = <Asset[]>(
       await assetDb.getAssetDataByListing(request.sharetribe_listing_id)
     );
-
     // update the thumbnail
     const needThumbnailUpdate = await assetProcessing.checkForNewThumbnail(request, assetsToUpdate);
     if (needThumbnailUpdate) {
