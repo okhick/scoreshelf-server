@@ -9,9 +9,9 @@ export class S3 {
 
   connectToStorage(): S3_SDK {
     const instance = new S3_SDK({
-      accessKeyId: 'HMEDIGOOYCMMPLUBGWUV',
-      secretAccessKey: 'XZqUFP8ZHiCFBqQsyioaa8tGfU8gNbzKdP3g0Tmzdt4',
-      endpoint: 'https://nyc3.digitaloceanspaces.com/',
+      accessKeyId: process.env.DO_SPACES_ACCESS_KEY_ID,
+      secretAccessKey: process.env.DO_SPACES_SECRET_ACCESS_KEY,
+      endpoint: process.env.DO_SPACES_ENDPOINT,
     });
 
     return instance;

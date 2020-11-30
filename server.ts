@@ -1,6 +1,9 @@
 import Express from 'express';
 import Mongoose from 'mongoose';
 
+import * as dotenv from 'dotenv';
+dotenv.config();
+
 const port = 3000;
 const app = Express();
 module.exports = app;
@@ -9,6 +12,7 @@ module.exports = app;
 // is this dependency injecting?
 // make sure to load the express before the routes otherwise things can get weird...
 require('./config/express')(app);
+require('./modules/auth')(app);
 require('./modules/assets')(app);
 
 connect();
@@ -24,11 +28,8 @@ function connect() {
     // .on('disconnected', connect) // reconnect if disconnected
     .once('open', listen); // spin up express when connected to mongo
 
-  return Mongoose.connect(
-    'mongodb+srv://scoreshelf:theshelf@cluster0.3ktpg.mongodb.net/scoreshelf?retryWrites=true&w=majority',
-    {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    }
-  );
+  return Mongoose.connect(<string>process.env.MONGO_URL, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+  });
 }
