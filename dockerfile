@@ -1,5 +1,12 @@
 FROM node:latest
 
+WORKDIR /var/server
+COPY ./ /var/server
+
 RUN apt-get update
 RUN yes | apt-get install graphicsmagick 
 RUN yes |apt-get install ghostscript
+
+RUN npm install
+RUN npm run build
+
