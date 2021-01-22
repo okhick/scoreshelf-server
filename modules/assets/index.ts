@@ -98,6 +98,17 @@ module.exports = function (app: Application) {
     res.json(thumbnailData);
   });
 
+  app.post('/uploadProfilePicture', verifyToken, async (req: Request, res: Response) => {
+    const assetProcessing = new AssetProcessing();
+    console.log(req);
+    const receivedFiles = req.files;
+    const receivedBody = JSON.parse(req.body.assetMetadata);
+
+    const response = await assetProcessing.uploadProfilePicture(receivedFiles, receivedBody);
+
+    return res.json(response);
+  });
+
   // app.get('/testpdfparse', async (req: Request, res: Response) => {
   //   const assetProcessing = new Asset2Thumbnail();
 

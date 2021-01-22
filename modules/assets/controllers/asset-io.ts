@@ -36,6 +36,21 @@ export class AssetIO {
     return upload_res;
   }
 
+  async saveProfilePictureFile(upload: UploadRequest): Promise<ManagedUpload.SendData> {
+    const s3 = new S3();
+    const uploadPath = `${this.GENERATED_BASE}/${upload.sharetribe_user_id}`;
+    console.log(upload);
+    const uploadParams = {
+      file: upload.file.data,
+      permissions: 'public-read',
+      key: `${uploadPath}/${upload.file.name}`,
+    };
+
+    const upload_res = await s3.uploadFile(uploadParams);
+
+    return upload_res;
+  }
+
   async deleteFile(file: GenericAsset) {
     const s3 = new S3();
 
