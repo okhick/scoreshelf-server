@@ -16,9 +16,21 @@ export interface Asset extends GenericAsset, Document {
   thumbnail_settings?: Thumbnail;
 }
 
+export interface AssetMetadata {
+  sharetribe_listing_id: string;
+  sharetribe_user_id: string;
+  metadata: {
+    [key: string]: {
+      thumbnailSettings: Thumbnail;
+    };
+  };
+}
+
 export interface Thumbnail extends GenericAsset, Document {
   page: number;
 }
+
+export interface ProfilePicture extends GenericAsset, Document {}
 
 export interface AssetDataRequest {
   ids: string[];

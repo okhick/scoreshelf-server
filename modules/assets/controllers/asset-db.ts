@@ -1,10 +1,11 @@
-import { AssetModel, ThumbnailModel } from '../models/Asset';
+import { AssetModel, ProfilePictureModel, ThumbnailModel } from '../models/Asset';
 import { AssetIO } from './asset-io';
 import mongoose from 'mongoose';
 
 import {
   Asset,
   Thumbnail,
+  ProfilePicture,
   AssetDataRequest,
   UploadRequest,
   UploadThumbnailRequest,
@@ -40,6 +41,16 @@ export class AssetDB {
     });
     const newThumbnailRes = await newThumbnail.save();
     return newThumbnailRes;
+  }
+
+  async saveProfilePictureData(upload: UploadRequest): Promise<ProfilePicture> {
+    const newProfilePicture = new ProfilePictureModel({
+      sharetribe_user_id: upload.sharetribe_user_id,
+      sharetribe_listing_id: upload.sharetribe_listing_id,
+      asset_name: upload.file.name,
+    });
+    const newProfilePictureRes = await newProfilePicture.save();
+    return newProfilePictureRes;
   }
 
   async updateThumbnailData(

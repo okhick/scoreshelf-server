@@ -7,12 +7,14 @@ import { unlinkSync, readFileSync } from 'fs';
 import { Request } from 'express';
 import {
   Asset,
+  AssetMetadata,
   UploadRequest,
   UpdateRequest,
   UploadThumbnailRequest,
   UpdateThumbnailResponse,
   UploadResponse,
   Thumbnail,
+  ProfilePicture,
 } from '../@types';
 import { AssetModel, ThumbnailModel } from '../models/Asset';
 
@@ -21,7 +23,7 @@ export class AssetProcessing {
   // ========== Uploaders =========
   // ==============================
 
-  async uploadAssets(assets: Request['files'], data: any) {
+  async uploadAssets(assets: Request['files'], data: AssetMetadata) {
     const assetIo = new AssetIO();
     const assetDb = new AssetDB();
 
@@ -41,6 +43,26 @@ export class AssetProcessing {
           response.push(assetDoc);
         })
       );
+    }
+    return response;
+  }
+
+  async uploadProfilePicture(asset: Request['files'], data: AssetMetadata) {
+    const assetIo = new AssetIO();
+    const assetDb = new AssetDB();
+
+    const response: ProfilePicture[] = [];
+
+    if (asset) {
+      const upload: UploadRequest = {
+        file: asset.file_0,
+        sharetribe_user_id: data.sharetribe_user_id,
+        sharetribe_listing_id: data.sharetribe_listing_id,
+      };
+
+      const s3Res = await assetIo.saveProfilePictureFile(upload);
+      const assetDoc = await assetDb.saveProfilePictureData(upload);
+      response.push(assetDoc);
     }
     return response;
   }
