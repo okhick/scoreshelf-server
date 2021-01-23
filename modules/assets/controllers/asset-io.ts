@@ -1,7 +1,14 @@
 import { ManagedUpload } from 'aws-sdk/clients/s3';
 import { S3 } from '../middleware/s3';
-import { Asset, GenericAsset, UploadRequest, UploadThumbnailRequest } from '../@types';
-import { AssetModel, ThumbnailModel } from '../models/Asset';
+import {
+  Asset,
+  GenericAsset,
+  UploadRequest,
+  UploadThumbnailRequest,
+  UploadProfilePictureRequest,
+} from '../@types';
+import { AssetModel, ProfilePictureModel, ThumbnailModel } from '../models/Asset';
+import { Pricing } from 'aws-sdk/clients/all';
 
 export class AssetIO {
   ASSET_BASE = 'assets';
@@ -36,10 +43,11 @@ export class AssetIO {
     return upload_res;
   }
 
-  async saveProfilePictureFile(upload: UploadRequest): Promise<ManagedUpload.SendData> {
+  async saveProfilePictureFile(
+    upload: UploadProfilePictureRequest
+  ): Promise<ManagedUpload.SendData> {
     const s3 = new S3();
     const uploadPath = `${this.GENERATED_BASE}/${upload.sharetribe_user_id}`;
-    console.log(upload);
     const uploadParams = {
       file: upload.file.data,
       permissions: 'public-read',
@@ -61,6 +69,10 @@ export class AssetIO {
     }
     if (file instanceof ThumbnailModel) {
       const key = `${this.GENERATED_BASE}/${file.sharetribe_user_id}/${file.sharetribe_listing_id}/${file.asset_name}`;
+      res = await s3.removeFile(key);
+    }
+    if (file instanceof ProfilePictureModel) {
+      const key = `${this.GENERATED_BASE}/${file.sharetribe_user_id}/${file.asset_name}`;
       res = await s3.removeFile(key);
     }
     return res;
