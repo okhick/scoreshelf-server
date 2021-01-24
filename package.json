@@ -8,7 +8,8 @@
     "start": "node dist/server.js",
     "dev": "nodemon server.ts",
     "fsd": "node --inspect=0.0.0.0:9229 -r ts-node/register server.ts",
-    "build": "tsc -p ."
+    "build": "tsc -p .",
+    "deploy": "tsc -p . && node dist/server.js"
   },
   "author": "Oliver Hickman",
   "license": "ISC",
