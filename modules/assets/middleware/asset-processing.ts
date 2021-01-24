@@ -1,10 +1,13 @@
 import { AssetIO } from '../controllers/asset-io';
 import { AssetDB } from '../controllers/asset-db';
 import { Asset2Thumbnail } from './asset2thumbnail';
+import { Sharp } from './sharp';
+
 import { parse, format } from 'path';
 import { unlinkSync, readFileSync } from 'fs';
 
 import { Request } from 'express';
+import { FileArray } from 'express-fileupload';
 import {
   Asset,
   AssetMetadata,
@@ -15,55 +18,67 @@ import {
   UploadResponse,
   Thumbnail,
   ProfilePicture,
+  UploadProfilePictureRequest,
 } from '../@types';
 import { AssetModel, ThumbnailModel } from '../models/Asset';
+import sharp from 'sharp';
 
 export class AssetProcessing {
   // ==============================
   // ========== Uploaders =========
   // ==============================
 
-  async uploadAssets(assets: Request['files'], data: AssetMetadata) {
+  async uploadAssets(assets: FileArray, data: AssetMetadata) {
     const assetIo = new AssetIO();
     const assetDb = new AssetDB();
 
     const response: Asset[] = [];
-    if (assets) {
-      const assetKeys = Object.keys(assets);
-      await Promise.all(
-        assetKeys.map(async (assetKey) => {
-          const upload: UploadRequest = {
-            file: assets[assetKey],
-            sharetribe_user_id: data.sharetribe_user_id,
-            sharetribe_listing_id: data.sharetribe_listing_id,
-          };
 
-          const s3Res = await assetIo.saveAssetFile(upload);
-          const assetDoc = await assetDb.saveAssetData(upload);
-          response.push(assetDoc);
-        })
-      );
-    }
+    const assetKeys = Object.keys(assets);
+    await Promise.all(
+      assetKeys.map(async (assetKey) => {
+        const upload: UploadRequest = {
+          file: assets[assetKey],
+          sharetribe_user_id: data.sharetribe_user_id,
+          sharetribe_listing_id: data.sharetribe_listing_id,
+        };
+
+        const s3Res = await assetIo.saveAssetFile(upload);
+        const assetDoc = await assetDb.saveAssetData(upload);
+        response.push(assetDoc);
+      })
+    );
+
     return response;
   }
 
-  async uploadProfilePicture(asset: Request['files'], data: AssetMetadata) {
+  async uploadProfilePicture(asset: FileArray, data: AssetMetadata) {
     const assetIo = new AssetIO();
     const assetDb = new AssetDB();
+    const sharp = new Sharp();
 
-    const response: ProfilePicture[] = [];
-
-    if (asset) {
-      const upload: UploadRequest = {
-        file: asset.file_0,
-        sharetribe_user_id: data.sharetribe_user_id,
-        sharetribe_listing_id: data.sharetribe_listing_id,
-      };
-
-      const s3Res = await assetIo.saveProfilePictureFile(upload);
-      const assetDoc = await assetDb.saveProfilePictureData(upload);
-      response.push(assetDoc);
+    // First check for existing profile pic and delete if it exists
+    const currentProfilePic = (await assetDb.getProfilePictureDataByUser(
+      data.sharetribe_user_id
+    )) as ProfilePicture;
+    if (currentProfilePic != null) {
+      this.deleteProfilePicture(currentProfilePic);
     }
+
+    // resize the image to a square
+    const resizedPicture = await sharp.resizeProfilePicture(asset.file.data);
+    asset.file.data = resizedPicture;
+
+    // Then upload the new one.
+    const upload: UploadProfilePictureRequest = {
+      file: asset.file,
+      sharetribe_user_id: data.sharetribe_user_id,
+    };
+
+    const s3Res = await assetIo.saveProfilePictureFile(upload);
+    const assetDoc = await assetDb.saveProfilePictureData(upload);
+    const response = assetDoc;
+
     return response;
   }
 
@@ -231,6 +246,16 @@ export class AssetProcessing {
     if (thumbnailDeleted) assetIo.deleteFile(thumbnailDeleted);
 
     return thumbnailDeleted;
+  }
+
+  async deleteProfilePicture(profilePicture: ProfilePicture) {
+    const assetIo = new AssetIO();
+    const assetDb = new AssetDB();
+
+    const profilePictureDeleted = await assetDb.deleteAssetData(profilePicture._id, 'profile');
+    if (profilePictureDeleted) assetIo.deleteFile(profilePictureDeleted);
+
+    return profilePictureDeleted;
   }
 
   // async newThumbnail(asset: UploadThumbnailRequest) {

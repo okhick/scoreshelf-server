@@ -11,6 +11,7 @@ import {
   UploadThumbnailRequest,
   GenericAsset,
   UpdateThumbnailResponse,
+  UploadProfilePictureRequest,
 } from '../@types';
 
 export class AssetDB {
@@ -43,10 +44,9 @@ export class AssetDB {
     return newThumbnailRes;
   }
 
-  async saveProfilePictureData(upload: UploadRequest): Promise<ProfilePicture> {
+  async saveProfilePictureData(upload: UploadProfilePictureRequest): Promise<ProfilePicture> {
     const newProfilePicture = new ProfilePictureModel({
       sharetribe_user_id: upload.sharetribe_user_id,
-      sharetribe_listing_id: upload.sharetribe_listing_id,
       asset_name: upload.file.name,
     });
     const newProfilePictureRes = await newProfilePicture.save();
@@ -73,7 +73,9 @@ export class AssetDB {
   // ========== Getters ==========
   // =============================
 
-  async getAssetData(dataRequest: AssetDataRequest): Promise<(Asset | Thumbnail | null)[]> {
+  async getAssetData(
+    dataRequest: AssetDataRequest
+  ): Promise<(Asset | Thumbnail | ProfilePicture | null)[]> {
     return Promise.all(
       dataRequest.ids.map(
         async (id): Promise<Asset | Thumbnail | null> => {
@@ -90,6 +92,10 @@ export class AssetDB {
             case 'thumbnail':
               assetData = await ThumbnailModel.findById(id);
               break;
+
+            case 'profile':
+              assetData = await ProfilePictureModel.findById(id);
+              break;
           }
           return assetData;
         }
@@ -104,6 +110,11 @@ export class AssetDB {
     return assets;
   }
 
+  async getProfilePictureDataByUser(sharetribe_user_id: string) {
+    const picture = await ProfilePictureModel.findOne({ sharetribe_user_id: sharetribe_user_id });
+    return picture;
+  }
+
   // ==============================
   // ========== Deleters ==========
   // ==============================
@@ -116,6 +127,9 @@ export class AssetDB {
         break;
       case 'thumbnail':
         res = await ThumbnailModel.findOneAndDelete({ _id: id });
+        break;
+      case 'profile':
+        res = await ProfilePictureModel.findByIdAndDelete({ _id: id });
         break;
     }
     return res;

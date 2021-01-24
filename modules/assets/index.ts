@@ -2,7 +2,7 @@ import { AssetDB } from './controllers/asset-db';
 import { AssetProcessing } from './middleware/asset-processing';
 
 import { Application, Request, Response } from 'express';
-import { Asset, AssetDataRequest } from './@types';
+import { Asset, AssetMetadata, AssetDataRequest } from './@types';
 import { AssetIO } from './controllers/asset-io';
 
 import { verifyToken } from '../auth/middleware/verifyToken';
@@ -14,7 +14,9 @@ module.exports = function (app: Application) {
     const receivedFiles = req.files;
     const receivedBody = JSON.parse(req.body.assetMetadata);
 
-    const response = await assetProcessing.uploadAssets(receivedFiles, receivedBody);
+    const response = receivedFiles
+      ? await assetProcessing.uploadAssets(receivedFiles, receivedBody)
+      : 'no files sent';
 
     return res.json(response);
   });
@@ -55,10 +57,11 @@ module.exports = function (app: Application) {
   app.get('/getAssetData', verifyToken, async (req: Request, res: Response) => {
     const assetDb = new AssetDB();
     const receivedBody = req.query;
+
     const dataRequest: AssetDataRequest = {
       ids: <string[]>receivedBody.scoreshelf_ids,
-      getLink: JSON.parse(<string>receivedBody.get_link), //convert 'true' to boolean
-      getType: 'asset',
+      getLink: JSON.parse(<string>receivedBody.getLink), //convert 'true' to boolean
+      getType: <'asset' | 'thumbnail' | 'profile'>receivedBody.getType,
     };
 
     const assetData = await assetDb.getAssetData(dataRequest);
@@ -100,11 +103,14 @@ module.exports = function (app: Application) {
 
   app.post('/uploadProfilePicture', verifyToken, async (req: Request, res: Response) => {
     const assetProcessing = new AssetProcessing();
-    console.log(req);
-    const receivedFiles = req.files;
-    const receivedBody = JSON.parse(req.body.assetMetadata);
 
-    const response = await assetProcessing.uploadProfilePicture(receivedFiles, receivedBody);
+    const receivedFiles = req.files;
+    const receivedBody: AssetMetadata = JSON.parse(req.body.assetMetadata);
+
+    const response =
+      receivedFiles != undefined
+        ? await assetProcessing.uploadProfilePicture(receivedFiles, receivedBody)
+        : 'no file attached';
 
     return res.json(response);
   });
