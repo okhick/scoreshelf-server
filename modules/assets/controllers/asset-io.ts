@@ -1,5 +1,6 @@
 import { ManagedUpload } from 'aws-sdk/clients/s3';
 import { S3 } from '../middleware/s3';
+import { GetObjectOutput } from 'aws-sdk/clients/s3';
 import {
   Asset,
   GenericAsset,
@@ -88,7 +89,15 @@ export class AssetIO {
   // only handle asset downloading, not generated
   async getAsset(assetData: GenericAsset) {
     const s3 = new S3();
-    const key = `${this.ASSET_BASE}/${assetData.sharetribe_user_id}/${assetData.sharetribe_listing_id}/${assetData.asset_name}`;
+
+    let key: string = '';
+    if (assetData instanceof AssetModel) {
+      key = `${this.ASSET_BASE}/${assetData.sharetribe_user_id}/${assetData.sharetribe_listing_id}/${assetData.asset_name}`;
+    }
+    if (assetData instanceof ProfilePictureModel) {
+      key = `${this.ASSET_BASE}/${assetData.sharetribe_user_id}/${assetData.asset_name}`;
+    }
+
     const object = await s3.getObject(key);
     return <Buffer>object?.Body;
   }

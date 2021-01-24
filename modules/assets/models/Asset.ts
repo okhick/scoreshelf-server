@@ -13,7 +13,6 @@ const thumbnailSchema = new Schema({
 
 const profilePictureSchema = new Schema({
   sharetribe_user_id: String,
-  sharetribe_listing_id: String,
   asset_name: String,
   date_added: { type: Date, default: Date.now },
 });

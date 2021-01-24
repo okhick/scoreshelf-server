@@ -57,10 +57,11 @@ module.exports = function (app: Application) {
   app.get('/getAssetData', verifyToken, async (req: Request, res: Response) => {
     const assetDb = new AssetDB();
     const receivedBody = req.query;
+
     const dataRequest: AssetDataRequest = {
       ids: <string[]>receivedBody.scoreshelf_ids,
-      getLink: JSON.parse(<string>receivedBody.get_link), //convert 'true' to boolean
-      getType: 'asset',
+      getLink: JSON.parse(<string>receivedBody.getLink), //convert 'true' to boolean
+      getType: <'asset' | 'thumbnail' | 'profile'>receivedBody.getType,
     };
 
     const assetData = await assetDb.getAssetData(dataRequest);

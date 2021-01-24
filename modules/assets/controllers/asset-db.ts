@@ -94,7 +94,7 @@ export class AssetDB {
               break;
 
             case 'profile':
-              assetData = await ProfilePictureModel.findOne({ sharetribe_user_id: id });
+              assetData = await ProfilePictureModel.findById(id);
               break;
           }
           return assetData;
@@ -108,6 +108,11 @@ export class AssetDB {
       'thumbnail_settings'
     );
     return assets;
+  }
+
+  async getProfilePictureDataByUser(sharetribe_user_id: string) {
+    const picture = await ProfilePictureModel.findOne({ sharetribe_user_id: sharetribe_user_id });
+    return picture;
   }
 
   // ==============================

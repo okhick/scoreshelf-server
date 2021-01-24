@@ -1,8 +1,8 @@
 import sharp from 'sharp';
 
 export class Sharp {
-  PROFILE_PICTURE_HEIGHT = 200;
-  PROFILE_PICTURE_WIDTH = 200;
+  PROFILE_PICTURE_HEIGHT = 300;
+  PROFILE_PICTURE_WIDTH = 300;
 
   async resizeProfilePicture(input: Buffer) {
     const sharpImage = await sharp(input)

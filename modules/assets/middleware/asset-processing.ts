@@ -58,14 +58,11 @@ export class AssetProcessing {
     const sharp = new Sharp();
 
     // First check for existing profile pic and delete if it exists
-    const currentProfilePic = (await assetDb.getAssetData({
-      ids: [data.sharetribe_user_id],
-      getLink: false,
-      getType: 'profile',
-    })) as ProfilePicture[];
-
-    if (currentProfilePic[0] != null) {
-      this.deleteProfilePicture(currentProfilePic[0]);
+    const currentProfilePic = (await assetDb.getProfilePictureDataByUser(
+      data.sharetribe_user_id
+    )) as ProfilePicture;
+    if (currentProfilePic != null) {
+      this.deleteProfilePicture(currentProfilePic);
     }
 
     // resize the image to a square
