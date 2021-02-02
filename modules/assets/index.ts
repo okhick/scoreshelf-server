@@ -1,8 +1,8 @@
 import { AssetDB } from './controllers/asset-db';
 import { AssetProcessing } from './middleware/asset-processing';
 
-import { Request, Response, Router } from 'express';
-import { Asset, AssetDataRequest } from './@types';
+import { Router, Request, Response } from 'express';
+import { Asset, AssetMetadata, AssetDataRequest } from './@types';
 import { AssetIO } from './controllers/asset-io';
 
 import { verifyToken } from '../auth/middleware/verifyToken';
@@ -17,7 +17,9 @@ router.post('/uploadAssets', verifyToken, async (req: Request, res: Response) =>
   const receivedFiles = req.files;
   const receivedBody = JSON.parse(req.body.assetMetadata);
 
-  const response = await assetProcessing.uploadAssets(receivedFiles, receivedBody);
+  const response = receivedFiles
+    ? await assetProcessing.uploadAssets(receivedFiles, receivedBody)
+    : 'no files sent';
 
   return res.json(response);
 });
@@ -56,10 +58,11 @@ router.post('/updateAssetMetadata', verifyToken, async (req: Request, res: Respo
 router.get('/getAssetData', verifyToken, async (req: Request, res: Response) => {
   const assetDb = new AssetDB();
   const receivedBody = req.query;
+
   const dataRequest: AssetDataRequest = {
     ids: <string[]>receivedBody.scoreshelf_ids,
-    getLink: JSON.parse(<string>receivedBody.get_link), //convert 'true' to boolean
-    getType: 'asset',
+    getLink: JSON.parse(<string>receivedBody.getLink), //convert 'true' to boolean
+    getType: <'asset' | 'thumbnail' | 'profile'>receivedBody.getType,
   };
 
   const assetData = await assetDb.getAssetData(dataRequest);
@@ -97,6 +100,20 @@ router.get('/getThumbnailData', verifyToken, async (req: Request, res: Response)
   };
   const thumbnailData = await assetDb.getAssetData(dataRequest);
   res.json(thumbnailData);
+});
+
+router.post('/uploadProfilePicture', verifyToken, async (req: Request, res: Response) => {
+  const assetProcessing = new AssetProcessing();
+
+  const receivedFiles = req.files;
+  const receivedBody: AssetMetadata = JSON.parse(req.body.assetMetadata);
+
+  const response =
+    receivedFiles != undefined
+      ? await assetProcessing.uploadProfilePicture(receivedFiles, receivedBody)
+      : 'no file attached';
+
+  return res.json(response);
 });
 
 // app.get('/testpdfparse', async (req: Request, res: Response) => {
