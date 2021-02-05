@@ -8,18 +8,16 @@ const port = 3000;
 const app = Express();
 module.exports = app;
 
-// these export a function that takes the argument 'app'. that's what's going on here.
-// is this dependency injecting?
-// require('./config/express')(app);
-
 import config from './config/express';
 import assets from './modules/assets';
 import auth from './modules/auth';
+import sharetribe from './modules/sharetribe';
 
 // make sure to load the config before the routes otherwise things can get weird...
 app.use(config);
 app.use('/assets', assets);
 app.use('/auth', auth);
+app.use('/sharetribe', sharetribe);
 
 connect();
 
