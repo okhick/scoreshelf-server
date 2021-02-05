@@ -1,6 +1,5 @@
 import { AssetModel, ProfilePictureModel, ThumbnailModel } from '../models/Asset';
 import { AssetIO } from './asset-io';
-import mongoose from 'mongoose';
 
 import {
   Asset,
