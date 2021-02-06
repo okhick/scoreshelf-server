@@ -21,8 +21,11 @@ export class PublisherProcessing {
   async addNewPublisher(newPublisher: NewPublisherRequest): Promise<IPublisher | null> {
     const publisherDb = new PublisherDB();
     // check if user already has publisher
-    const useHasPublisher = publisherDb.findPublisherByUserId(newPublisher.sharetribe_user_id);
-    if (useHasPublisher === null) {
+    const userHasPublisher = await publisherDb.findPublisherByUserId(
+      newPublisher.sharetribe_user_id
+    );
+
+    if (userHasPublisher === null) {
       return await publisherDb.addNewPublisher(newPublisher);
     } else {
       return null;
