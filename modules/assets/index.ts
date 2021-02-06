@@ -1,137 +1,150 @@
 import { AssetDB } from './controllers/asset-db';
 import { AssetProcessing } from './middleware/asset-processing';
 
-import { Application, Request, Response } from 'express';
+import { Router, Request, Response } from 'express';
 import { Asset, AssetMetadata, AssetDataRequest } from './@types';
 import { AssetIO } from './controllers/asset-io';
 
 import { verifyToken } from '../auth/middleware/verifyToken';
 
-module.exports = function (app: Application) {
-  app.post('/uploadAssets', verifyToken, async (req: Request, res: Response) => {
-    const assetProcessing = new AssetProcessing();
+const router = Router();
 
-    const receivedFiles = req.files;
-    const receivedBody = JSON.parse(req.body.assetMetadata);
+router.get('/test', (_: Request, res: Response) => res.json('ASSETS'));
 
-    const response = receivedFiles
-      ? await assetProcessing.uploadAssets(receivedFiles, receivedBody)
-      : 'no files sent';
+// ============================================================================
+// =============================== Uploaders ==================================
+// ============================================================================
 
-    return res.json(response);
+router.post('/uploadAssets', verifyToken, async (req: Request, res: Response) => {
+  const assetProcessing = new AssetProcessing();
+
+  const receivedFiles = req.files;
+  const receivedBody = JSON.parse(req.body.assetMetadata);
+
+  const response = receivedFiles
+    ? await assetProcessing.uploadAssets(receivedFiles, receivedBody)
+    : 'no files sent';
+
+  return res.json(response);
+});
+
+router.post('/uploadProfilePicture', verifyToken, async (req: Request, res: Response) => {
+  const assetProcessing = new AssetProcessing();
+
+  const receivedFiles = req.files;
+  const receivedBody: AssetMetadata = JSON.parse(req.body.assetMetadata);
+
+  const response =
+    receivedFiles != undefined
+      ? await assetProcessing.uploadProfilePicture(receivedFiles, receivedBody)
+      : 'no file attached';
+
+  return res.json(response);
+});
+
+// ============================================================================
+// ================================= Getters ==================================
+// ============================================================================
+
+router.get('/getAssetData', verifyToken, async (req: Request, res: Response) => {
+  const assetDb = new AssetDB();
+  const receivedBody = req.query;
+
+  const dataRequest: AssetDataRequest = {
+    ids: <string[]>receivedBody.scoreshelf_ids,
+    getLink: JSON.parse(<string>receivedBody.getLink), //convert 'true' to boolean
+    getType: <'asset' | 'thumbnail' | 'profile'>receivedBody.getType,
+  };
+
+  const assetData = await assetDb.getAssetData(dataRequest);
+  res.json(assetData);
+});
+
+router.get('/getAssetBin', verifyToken, async (req: Request, res: Response) => {
+  const assetDb = new AssetDB();
+  const assetIo = new AssetIO();
+
+  const scoreshelf_id = <string>req.query.scoreshelf_id;
+
+  const dataRequest: AssetDataRequest = {
+    ids: [scoreshelf_id],
+    getLink: false,
+    getType: 'asset',
+  };
+  const assetData = <Asset[]>await assetDb.getAssetData(dataRequest);
+  const assetBuffer = await assetIo.getAsset(assetData[0]);
+
+  res.writeHead(200, {
+    'Content-Type': 'application/pdf',
   });
+  res.end(assetBuffer, 'binary');
+});
 
-  app.delete('/deleteAssets', verifyToken, async (req: Request, res: Response) => {
-    const assetProcessing = new AssetProcessing();
+router.get('/getThumbnailData', verifyToken, async (req: Request, res: Response) => {
+  const assetDb = new AssetDB();
 
-    const receivedBody: Asset[] = req.body.filesToRemove;
-    const deletedFiles: String[] = await assetProcessing.deleteAssets(receivedBody);
+  const scoreshelf_ids = <string[]>req.query.scoreshelf_ids;
+  const dataRequest: AssetDataRequest = {
+    ids: scoreshelf_ids,
+    getLink: false,
+    getType: 'thumbnail',
+  };
+  const thumbnailData = await assetDb.getAssetData(dataRequest);
+  res.json(thumbnailData);
+});
 
-    return res.json(deletedFiles);
-  });
+// ============================================================================
+// ================================= Updater ==================================
+// ============================================================================
 
-  app.post('/updateAssetMetadata', verifyToken, async (req: Request, res: Response) => {
-    const assetDb = new AssetDB();
-    const assetProcessing = new AssetProcessing();
-    const request = req.body;
-    // const response = {};
+router.post('/updateAssetMetadata', verifyToken, async (req: Request, res: Response) => {
+  const assetDb = new AssetDB();
+  const assetProcessing = new AssetProcessing();
+  const request = req.body;
+  // const response = {};
 
-    // get all assets related to this listing
-    let assetsToUpdate = <Asset[]>(
-      await assetDb.getAssetDataByListing(request.sharetribe_listing_id)
-    );
-    // update the thumbnail
-    const needThumbnailUpdate = await assetProcessing.checkForNewThumbnail(request, assetsToUpdate);
-    if (needThumbnailUpdate) {
-      const thumbnailUpdate = await assetProcessing.updateThumbnail(request, assetsToUpdate);
-      // update assets and replace assetToUpdate with fresh data
-      assetsToUpdate = await assetDb.updateThumbnailData(assetsToUpdate, thumbnailUpdate);
-    }
+  // get all assets related to this listing
+  let assetsToUpdate = <Asset[]>await assetDb.getAssetDataByListing(request.sharetribe_listing_id);
+  // update the thumbnail
+  const needThumbnailUpdate = await assetProcessing.checkForNewThumbnail(request, assetsToUpdate);
+  if (needThumbnailUpdate) {
+    const thumbnailUpdate = await assetProcessing.updateThumbnail(request, assetsToUpdate);
+    // update assets and replace assetToUpdate with fresh data
+    assetsToUpdate = await assetDb.updateThumbnailData(assetsToUpdate, thumbnailUpdate);
+  }
 
-    // ...do more updating here
+  // ...do more updating here
 
-    // return full list of assets for this listing for any updating needed
-    return res.json(assetsToUpdate);
-  });
+  // return full list of assets for this listing for any updating needed
+  return res.json(assetsToUpdate);
+});
 
-  app.get('/getAssetData', verifyToken, async (req: Request, res: Response) => {
-    const assetDb = new AssetDB();
-    const receivedBody = req.query;
+// ============================================================================
+// ================================= Deleter ==================================
+// ============================================================================
 
-    const dataRequest: AssetDataRequest = {
-      ids: <string[]>receivedBody.scoreshelf_ids,
-      getLink: JSON.parse(<string>receivedBody.getLink), //convert 'true' to boolean
-      getType: <'asset' | 'thumbnail' | 'profile'>receivedBody.getType,
-    };
+router.delete('/deleteAssets', verifyToken, async (req: Request, res: Response) => {
+  const assetProcessing = new AssetProcessing();
 
-    const assetData = await assetDb.getAssetData(dataRequest);
-    res.json(assetData);
-  });
+  const receivedBody: Asset[] = req.body.filesToRemove;
+  const deletedFiles: String[] = await assetProcessing.deleteAssets(receivedBody);
 
-  app.get('/getAssetBin', verifyToken, async (req: Request, res: Response) => {
-    const assetDb = new AssetDB();
-    const assetIo = new AssetIO();
+  return res.json(deletedFiles);
+});
 
-    const scoreshelf_id = <string>req.query.scoreshelf_id;
+// app.get('/testpdfparse', async (req: Request, res: Response) => {
+//   const assetProcessing = new Asset2Thumbnail();
 
-    const dataRequest: AssetDataRequest = {
-      ids: [scoreshelf_id],
-      getLink: false,
-      getType: 'asset',
-    };
-    const assetData = <Asset[]>await assetDb.getAssetData(dataRequest);
-    const assetBuffer = await assetIo.getAsset(assetData[0]);
+//   const pageToConvertAsImage = 5;
+//   // const PDF = readFileSync('./brickwall.pdf');
+//   const PDF = readFileSync('./Scott Wollschleger - AMERICAN DREAM_8.4.17 (do not duplicate).pdf');
+//   const thumbnailFilePath = await assetProcessing.makePdfThumbnail(
+//     PDF,
+//     'Scott Wollschleger - AMERICAN DREAM_8.4.17 (do not duplicate).pdf',
+//     pageToConvertAsImage
+//   );
 
-    res.writeHead(200, {
-      'Content-Type': 'application/pdf',
-    });
-    res.end(assetBuffer, 'binary');
-  });
+//   res.json(thumbnailFilePath);
+// });
 
-  app.get('/getThumbnailData', verifyToken, async (req: Request, res: Response) => {
-    const assetDb = new AssetDB();
-
-    const scoreshelf_ids = <string[]>req.query.scoreshelf_ids;
-    const dataRequest: AssetDataRequest = {
-      ids: scoreshelf_ids,
-      getLink: false,
-      getType: 'thumbnail',
-    };
-    const thumbnailData = await assetDb.getAssetData(dataRequest);
-    res.json(thumbnailData);
-  });
-
-  app.post('/uploadProfilePicture', verifyToken, async (req: Request, res: Response) => {
-    const assetProcessing = new AssetProcessing();
-
-    const receivedFiles = req.files;
-    const receivedBody: AssetMetadata = JSON.parse(req.body.assetMetadata);
-
-    const response =
-      receivedFiles != undefined
-        ? await assetProcessing.uploadProfilePicture(receivedFiles, receivedBody)
-        : 'no file attached';
-
-    return res.json(response);
-  });
-
-  // app.get('/testpdfparse', async (req: Request, res: Response) => {
-  //   const assetProcessing = new Asset2Thumbnail();
-
-  //   const pageToConvertAsImage = 5;
-  //   // const PDF = readFileSync('./brickwall.pdf');
-  //   const PDF = readFileSync('./Scott Wollschleger - AMERICAN DREAM_8.4.17 (do not duplicate).pdf');
-  //   const thumbnailFilePath = await assetProcessing.makePdfThumbnail(
-  //     PDF,
-  //     'Scott Wollschleger - AMERICAN DREAM_8.4.17 (do not duplicate).pdf',
-  //     pageToConvertAsImage
-  //   );
-
-  //   res.json(thumbnailFilePath);
-  // });
-
-  // TESTS
-  app.get('/test', (req: Request, res: Response) => {
-    res.json('ASSET MODULE');
-  });
-};
+export default router;
