@@ -12,8 +12,8 @@ router.get('/test', (_: Request, res: Response) => res.json('SHARETRIBE'));
 // ============================================================================
 
 router.get('/getUsers', async (req: Request, res: Response) => {
-  const { SHARETRIBE } = new SharetribeIntegration();
-  const users: AxiosResponse<User[]> = await SHARETRIBE.users.query();
+  const sharetribeIntegration = new SharetribeIntegration();
+  const users = await sharetribeIntegration.getAllUsers();
   res.json(users);
 });
 

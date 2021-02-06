@@ -14,6 +14,17 @@ interface SharetribeSdk {
   authInfo: any;
 }
 
+interface SharetribeRes<T> {
+  data: T;
+  meta: {
+    'pagination/sorted': boolean;
+    totalItems: number;
+    totalPages: number;
+    page: number;
+    perPage: number;
+  };
+}
+
 interface Users {
   show: any;
   query: UsersFunc;
@@ -21,7 +32,7 @@ interface Users {
 }
 
 interface UsersFunc {
-  (createdAtStart?: string, createdAtEnd?: string): AxiosResponse<User[]>;
+  (createdAtStart?: string, createdAtEnd?: string): AxiosResponse<SharetribeRes<User[]>>;
   // (createdAtStart?: string, createdAtEnd?: string): string;
 }
 
