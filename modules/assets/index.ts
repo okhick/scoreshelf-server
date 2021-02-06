@@ -2,10 +2,12 @@ import { AssetDB } from './controllers/asset-db';
 import { AssetProcessing } from './middleware/asset-processing';
 
 import { Router, Request, Response } from 'express';
+import fileUpload from 'express-fileupload';
 import { Asset, AssetMetadata, AssetDataRequest } from './@types';
 import { AssetIO } from './controllers/asset-io';
 
 import { verifyToken } from '../auth/middleware/verifyToken';
+import requestValidation from './middleware/assetRequestValidation';
 
 const router = Router();
 
@@ -15,18 +17,20 @@ router.get('/test', (_: Request, res: Response) => res.json('ASSETS'));
 // =============================== Uploaders ==================================
 // ============================================================================
 
-router.post('/uploadAssets', verifyToken, async (req: Request, res: Response) => {
-  const assetProcessing = new AssetProcessing();
+router.post(
+  '/uploadAssets',
+  [verifyToken, requestValidation.uploadAssets],
+  async (req: Request, res: Response) => {
+    const assetProcessing = new AssetProcessing();
 
-  const receivedFiles = req.files;
-  const receivedBody = JSON.parse(req.body.assetMetadata);
+    const receivedFiles = <fileUpload.FileArray>req.files;
+    const receivedBody = JSON.parse(req.body.assetMetadata);
 
-  const response = receivedFiles
-    ? await assetProcessing.uploadAssets(receivedFiles, receivedBody)
-    : 'no files sent';
+    const response = await assetProcessing.uploadAssets(receivedFiles, receivedBody);
 
-  return res.json(response);
-});
+    return res.json(response);
+  }
+);
 
 router.post('/uploadProfilePicture', verifyToken, async (req: Request, res: Response) => {
   const assetProcessing = new AssetProcessing();

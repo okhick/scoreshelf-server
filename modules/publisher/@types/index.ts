@@ -12,13 +12,6 @@ export interface NewPublisherRequest {
   name: string;
   about: string;
 }
-export function isValidNewPublisherRequest(request: any) {
-  return (
-    typeof request.sharetribe_user_id === 'string' &&
-    typeof request.name === 'string' &&
-    typeof request.about === 'string'
-  );
-}
 
 export interface UpdatePublisherRequest {
   _id: string;
@@ -26,12 +19,4 @@ export interface UpdatePublisherRequest {
   name: string;
   about: string;
   date_added: Date;
-}
-export function isValidUpdatePublisherRequest(request: any) {
-  return (
-    typeof request._id === 'string' &&
-    typeof request.sharetribe_user_id === 'string' &&
-    typeof request.name === 'string' &&
-    typeof request.about === 'string'
-  );
 }
