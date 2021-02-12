@@ -52,7 +52,7 @@ export class AssetProcessing {
     return response;
   }
 
-  async uploadProfilePicture(asset: FileArray, data: AssetMetadata) {
+  async uploadProfilePicture(asset: FileArray, data: { sharetribe_user_id: string }) {
     const assetIo = new AssetIO();
     const assetDb = new AssetDB();
     const sharp = new Sharp();

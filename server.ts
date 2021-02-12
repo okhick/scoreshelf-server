@@ -13,6 +13,7 @@ import assets from './modules/assets';
 import auth from './modules/auth';
 import sharetribe from './modules/sharetribe';
 import publisher from './modules/publisher';
+import errorHandler from './modules/error/errorHandler';
 
 // make sure to load the config before the routes otherwise things can get weird...
 app.use(config);
@@ -20,6 +21,9 @@ app.use('/assets', assets);
 app.use('/auth', auth);
 app.use('/sharetribe', sharetribe);
 app.use('/publisher', publisher);
+
+// Do this last to be sure we can catch all errors
+app.use(errorHandler);
 
 connect();
 

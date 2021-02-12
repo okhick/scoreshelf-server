@@ -3,7 +3,7 @@ import { AssetProcessing } from './middleware/asset-processing';
 
 import { Router, Request, Response } from 'express';
 import fileUpload from 'express-fileupload';
-import { Asset, AssetMetadata, AssetDataRequest } from './@types';
+import { Asset, AssetMetadata, AssetDataRequest, UploadProfilePictureRequest } from './@types';
 import { AssetIO } from './controllers/asset-io';
 
 import { verifyToken } from '../auth/middleware/verifyToken';
@@ -24,7 +24,7 @@ router.post(
     const assetProcessing = new AssetProcessing();
 
     const receivedFiles = <fileUpload.FileArray>req.files;
-    const receivedBody = JSON.parse(req.body.assetMetadata);
+    const receivedBody = <AssetMetadata>JSON.parse(req.body.assetMetadata);
 
     const response = await assetProcessing.uploadAssets(receivedFiles, receivedBody);
 
@@ -32,57 +32,66 @@ router.post(
   }
 );
 
-router.post('/uploadProfilePicture', verifyToken, async (req: Request, res: Response) => {
-  const assetProcessing = new AssetProcessing();
+router.post(
+  '/uploadProfilePicture',
+  [verifyToken, requestValidation.uploadProfilePicture],
+  async (req: Request, res: Response) => {
+    const assetProcessing = new AssetProcessing();
 
-  const receivedFiles = req.files;
-  const receivedBody: AssetMetadata = JSON.parse(req.body.assetMetadata);
+    const receivedFiles = <fileUpload.FileArray>req.files;
+    const receivedBody = JSON.parse(req.body.assetMetadata);
 
-  const response =
-    receivedFiles != undefined
-      ? await assetProcessing.uploadProfilePicture(receivedFiles, receivedBody)
-      : 'no file attached';
+    const response = await assetProcessing.uploadProfilePicture(receivedFiles, receivedBody);
 
-  return res.json(response);
-});
+    return res.json(response);
+  }
+);
 
 // ============================================================================
 // ================================= Getters ==================================
 // ============================================================================
 
-router.get('/getAssetData', verifyToken, async (req: Request, res: Response) => {
-  const assetDb = new AssetDB();
-  const receivedBody = req.query;
+router.get(
+  '/getAssetData',
+  [verifyToken, requestValidation.getAssetData],
+  async (req: Request, res: Response) => {
+    const assetDb = new AssetDB();
+    const receivedBody = req.query;
 
-  const dataRequest: AssetDataRequest = {
-    ids: <string[]>receivedBody.scoreshelf_ids,
-    getLink: JSON.parse(<string>receivedBody.getLink), //convert 'true' to boolean
-    getType: <'asset' | 'thumbnail' | 'profile'>receivedBody.getType,
-  };
+    const dataRequest: AssetDataRequest = {
+      ids: <string[]>receivedBody.scoreshelf_ids,
+      getLink: JSON.parse(<string>receivedBody.getLink), //convert 'true' to boolean
+      getType: <'asset' | 'thumbnail' | 'profile'>receivedBody.getType,
+    };
 
-  const assetData = await assetDb.getAssetData(dataRequest);
-  res.json(assetData);
-});
+    const assetData = await assetDb.getAssetData(dataRequest);
+    res.json(assetData);
+  }
+);
 
-router.get('/getAssetBin', verifyToken, async (req: Request, res: Response) => {
-  const assetDb = new AssetDB();
-  const assetIo = new AssetIO();
+router.get(
+  '/getAssetBin',
+  [verifyToken, requestValidation.getAssetBin],
+  async (req: Request, res: Response) => {
+    const assetDb = new AssetDB();
+    const assetIo = new AssetIO();
 
-  const scoreshelf_id = <string>req.query.scoreshelf_id;
+    const scoreshelf_id = <string>req.query.scoreshelf_id;
 
-  const dataRequest: AssetDataRequest = {
-    ids: [scoreshelf_id],
-    getLink: false,
-    getType: 'asset',
-  };
-  const assetData = <Asset[]>await assetDb.getAssetData(dataRequest);
-  const assetBuffer = await assetIo.getAsset(assetData[0]);
+    const dataRequest: AssetDataRequest = {
+      ids: [scoreshelf_id],
+      getLink: false,
+      getType: 'asset',
+    };
+    const assetData = <Asset[]>await assetDb.getAssetData(dataRequest);
+    const assetBuffer = await assetIo.getAsset(assetData[0]);
 
-  res.writeHead(200, {
-    'Content-Type': 'application/pdf',
-  });
-  res.end(assetBuffer, 'binary');
-});
+    res.writeHead(200, {
+      'Content-Type': 'application/pdf',
+    });
+    res.end(assetBuffer, 'binary');
+  }
+);
 
 router.get('/getThumbnailData', verifyToken, async (req: Request, res: Response) => {
   const assetDb = new AssetDB();

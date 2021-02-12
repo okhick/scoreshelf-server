@@ -1,12 +1,14 @@
 import { Request, Response, NextFunction } from 'express';
 import mongoose from 'mongoose';
+import ApiError from '../../error';
 
 export default {
   validatePublisher: function (req: Request, res: Response, next: NextFunction) {
     if (typeof req.query.name === 'string') {
       next();
     } else {
-      res.status(400).json('INVALID NAME FORMAT. PLEASE USE STRING.');
+      next(ApiError.badData('NAME SHOULD BE TYPE STRING'));
+      return;
     }
   },
 
@@ -19,7 +21,8 @@ export default {
     if (isValid) {
       next();
     } else {
-      res.status(400).json({ message: 'MALFORMED REQUEST' });
+      next(ApiError.badData('MALFORMED REQUEST'));
+      return;
     }
   },
 
@@ -33,7 +36,8 @@ export default {
     if (isValid) {
       next();
     } else {
-      res.status(400).json({ message: 'MALFORMED REQUEST' });
+      next(ApiError.badData('MALFORMED REQUEST'));
+      return;
     }
   },
 };

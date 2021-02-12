@@ -1,7 +1,5 @@
-import { Application, Request, Response, Router } from 'express';
+import { Request, Response, Router } from 'express';
 import { Auth } from './controllers/auth';
-
-import bearerToken from 'express-bearer-token';
 
 const router = Router();
 
@@ -12,8 +10,6 @@ const router = Router();
 //   const newClient = await auth.newClient(username);
 //   res.json(newClient);
 // });
-
-router.use(bearerToken());
 
 router.get('/test', (req: Request, res: Response) => res.json('AUTH'));
 
