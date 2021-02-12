@@ -13,7 +13,7 @@ import assets from './modules/assets';
 import auth from './modules/auth';
 import sharetribe from './modules/sharetribe';
 import publisher from './modules/publisher';
-import errorHandler from './modules/error/errorHandler';
+import errorHandler from 'error/errorHandler';
 
 // make sure to load the config before the routes otherwise things can get weird...
 app.use(config);

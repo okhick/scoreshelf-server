@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { AssetMetadata } from '../@types';
-import ApiError from '../../error';
+import ApiError from 'error';
 
 export default {
   uploadAssets: function (req: Request, res: Response, next: NextFunction) {

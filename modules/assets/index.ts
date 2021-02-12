@@ -93,18 +93,22 @@ router.get(
   }
 );
 
-router.get('/getThumbnailData', verifyToken, async (req: Request, res: Response) => {
-  const assetDb = new AssetDB();
+router.get(
+  '/getThumbnailData',
+  [verifyToken, requestValidation.getThumbnailData],
+  async (req: Request, res: Response) => {
+    const assetDb = new AssetDB();
 
-  const scoreshelf_ids = <string[]>req.query.scoreshelf_ids;
-  const dataRequest: AssetDataRequest = {
-    ids: scoreshelf_ids,
-    getLink: false,
-    getType: 'thumbnail',
-  };
-  const thumbnailData = await assetDb.getAssetData(dataRequest);
-  res.json(thumbnailData);
-});
+    const scoreshelf_ids = <string[]>req.query.scoreshelf_ids;
+    const dataRequest: AssetDataRequest = {
+      ids: scoreshelf_ids,
+      getLink: false,
+      getType: 'thumbnail',
+    };
+    const thumbnailData = await assetDb.getAssetData(dataRequest);
+    res.json(thumbnailData);
+  }
+);
 
 // ============================================================================
 // ================================= Updater ==================================
