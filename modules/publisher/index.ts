@@ -3,12 +3,7 @@ import { PublisherProcessing } from './middleware/publisher-processing';
 
 import requestValidation from './middleware/publisherRequestValidation';
 
-import {
-  NewPublisherRequest,
-  isValidNewPublisherRequest,
-  UpdatePublisherRequest,
-  isValidUpdatePublisherRequest,
-} from './@types';
+import { NewPublisherRequest, UpdatePublisherRequest } from './@types';
 
 const router = Router();
 

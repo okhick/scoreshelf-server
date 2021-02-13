@@ -1,7 +1,7 @@
-import { AssetIO } from '../controllers/asset-io';
-import { AssetDB } from '../controllers/asset-db';
-import { Asset2Thumbnail } from './asset2thumbnail';
-import { Sharp } from './sharp';
+import { AssetIO } from 'assets/controllers/asset-io';
+import { AssetDB } from 'assets/controllers/asset-db';
+import { Asset2Thumbnail } from 'assets/middleware/asset2thumbnail';
+import { Sharp } from 'assets/middleware/sharp';
 
 import { parse, format } from 'path';
 import { unlinkSync, readFileSync } from 'fs';
@@ -19,9 +19,8 @@ import {
   Thumbnail,
   ProfilePicture,
   UploadProfilePictureRequest,
-} from '../@types';
-import { AssetModel, ThumbnailModel } from '../models/Asset';
-import sharp from 'sharp';
+} from 'assets/@types';
+import { AssetModel, ThumbnailModel } from 'assets/models/Asset';
 
 export class AssetProcessing {
   // ==============================
@@ -52,7 +51,7 @@ export class AssetProcessing {
     return response;
   }
 
-  async uploadProfilePicture(asset: FileArray, data: AssetMetadata) {
+  async uploadProfilePicture(asset: FileArray, data: { sharetribe_user_id: string }) {
     const assetIo = new AssetIO();
     const assetDb = new AssetDB();
     const sharp = new Sharp();

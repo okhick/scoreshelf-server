@@ -1,15 +1,14 @@
 import { ManagedUpload } from 'aws-sdk/clients/s3';
-import { S3 } from '../middleware/s3';
-import { GetObjectOutput } from 'aws-sdk/clients/s3';
+import { S3 } from 'assets/middleware/s3';
+
 import {
   Asset,
   GenericAsset,
   UploadRequest,
   UploadThumbnailRequest,
   UploadProfilePictureRequest,
-} from '../@types';
-import { AssetModel, ProfilePictureModel, ThumbnailModel } from '../models/Asset';
-import { Pricing } from 'aws-sdk/clients/all';
+} from 'assets/@types';
+import { AssetModel, ProfilePictureModel, ThumbnailModel } from 'assets/models/Asset';
 
 export class AssetIO {
   ASSET_BASE = 'assets';

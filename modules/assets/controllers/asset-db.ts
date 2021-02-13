@@ -1,5 +1,5 @@
-import { AssetModel, ProfilePictureModel, ThumbnailModel } from '../models/Asset';
-import { AssetIO } from './asset-io';
+import { AssetModel, ProfilePictureModel, ThumbnailModel } from 'assets/models/Asset';
+import { AssetIO } from 'assets/controllers/asset-io';
 
 import {
   Asset,
@@ -11,7 +11,7 @@ import {
   GenericAsset,
   UpdateThumbnailResponse,
   UploadProfilePictureRequest,
-} from '../@types';
+} from 'assets/@types';
 
 export class AssetDB {
   // =============================
