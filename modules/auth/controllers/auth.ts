@@ -2,9 +2,10 @@ import cryptoRandomString from 'crypto-random-string';
 import { DateTime } from 'luxon';
 import forge from 'node-forge';
 
-import { AuthorizedUser } from '../models/AuthorizedUsers';
-import { AuthCode } from '../models/AuthCode';
-import { AccessToken } from '../models/AccessToken';
+import ApiError from 'error/ApiError';
+import { AuthorizedUser } from 'auth/models/AuthorizedUsers';
+import { AuthCode } from 'auth/models/AuthCode';
+import { AccessToken } from 'auth/models/AccessToken';
 import {
   AuthorizedUser as IAuthorizedUser,
   AccessToken as IAccessToken,
@@ -27,10 +28,10 @@ not make it easy to hack...lol
 
 export class Auth {
   REASONS = {
-    noClient: 'NO_CLIENT_FOUND',
-    noAuthCode: 'NO_AUTH_CODE_FOUND',
-    expiredAuthCode: 'AUTH_CODE_EXPIRED',
-    pkceFailed: 'CHALLENGE_CODE_AND_VERIFIER_CODE_MISMATCH',
+    noClient: 'NO CLIENT FOUND',
+    noAuthCode: 'NO AUTH CODE FOUND',
+    expiredAuthCode: 'AUTH CODE EXPIRED',
+    pkceFailed: 'CHALLENGE CODE AND VERIFIER CODE MISMATCH',
   };
 
   async newClient(username: string): Promise<IAuthorizedUser> {
@@ -43,10 +44,11 @@ export class Auth {
     return newClient;
   }
 
-  async newAuthCode(authCodeRequest: AuthCodeRequest): Promise<AuthCodeResponse> {
+  async newAuthCode(authCodeRequest: AuthCodeRequest): Promise<AuthCodeResponse | ApiError> {
     // check if authorized client
     const isValidClient = await this.verifyClientId(authCodeRequest.client_id);
-    if (!isValidClient) return { status: false, reason: this.REASONS.noClient };
+    // if (!isValidClient) return { status: false, reason: this.REASONS.noClient };
+    if (!isValidClient) return ApiError.badData(this.REASONS.noClient);
 
     const authCode = cryptoRandomString({ length: 256, type: 'url-safe' });
     const expiration = DateTime.local().plus({ minutes: 1 }).toISO();

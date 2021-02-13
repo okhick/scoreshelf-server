@@ -13,4 +13,8 @@ export default class ApiError {
   static badData(message: string) {
     return new ApiError(400, message);
   }
+
+  static authFailed(message: string) {
+    return new ApiError(403, message);
+  }
 }
