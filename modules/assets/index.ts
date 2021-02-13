@@ -114,40 +114,50 @@ router.get(
 // ================================= Updater ==================================
 // ============================================================================
 
-router.post('/updateAssetMetadata', verifyToken, async (req: Request, res: Response) => {
-  const assetDb = new AssetDB();
-  const assetProcessing = new AssetProcessing();
-  const request = req.body;
-  // const response = {};
+router.post(
+  '/updateAssetMetadata',
+  [verifyToken, requestValidation.updateAssetMetadata],
+  async (req: Request, res: Response) => {
+    const assetDb = new AssetDB();
+    const assetProcessing = new AssetProcessing();
+    const request = req.body;
 
-  // get all assets related to this listing
-  let assetsToUpdate = <Asset[]>await assetDb.getAssetDataByListing(request.sharetribe_listing_id);
-  // update the thumbnail
-  const needThumbnailUpdate = await assetProcessing.checkForNewThumbnail(request, assetsToUpdate);
-  if (needThumbnailUpdate) {
-    const thumbnailUpdate = await assetProcessing.updateThumbnail(request, assetsToUpdate);
-    // update assets and replace assetToUpdate with fresh data
-    assetsToUpdate = await assetDb.updateThumbnailData(assetsToUpdate, thumbnailUpdate);
+    // get all assets related to this listing
+    let assetsToUpdate = <Asset[]>(
+      await assetDb.getAssetDataByListing(request.sharetribe_listing_id)
+    );
+
+    // update the thumbnail
+    const needThumbnailUpdate = await assetProcessing.checkForNewThumbnail(request, assetsToUpdate);
+    if (needThumbnailUpdate) {
+      const thumbnailUpdate = await assetProcessing.updateThumbnail(request, assetsToUpdate);
+      // update assets and replace assetToUpdate with fresh data
+      assetsToUpdate = await assetDb.updateThumbnailData(assetsToUpdate, thumbnailUpdate);
+    }
+
+    // ...do more updating here
+
+    // return full list of assets for this listing for any updating needed
+    return res.json(assetsToUpdate);
   }
-
-  // ...do more updating here
-
-  // return full list of assets for this listing for any updating needed
-  return res.json(assetsToUpdate);
-});
+);
 
 // ============================================================================
 // ================================= Deleter ==================================
 // ============================================================================
 
-router.delete('/deleteAssets', verifyToken, async (req: Request, res: Response) => {
-  const assetProcessing = new AssetProcessing();
+router.delete(
+  '/deleteAssets',
+  [verifyToken, requestValidation.deleteAssets],
+  async (req: Request, res: Response) => {
+    const assetProcessing = new AssetProcessing();
 
-  const receivedBody: Asset[] = req.body.filesToRemove;
-  const deletedFiles: String[] = await assetProcessing.deleteAssets(receivedBody);
+    const receivedBody: Asset[] = req.body.filesToRemove;
+    const deletedFiles: String[] = await assetProcessing.deleteAssets(receivedBody);
 
-  return res.json(deletedFiles);
-});
+    return res.json(deletedFiles);
+  }
+);
 
 // app.get('/testpdfparse', async (req: Request, res: Response) => {
 //   const assetProcessing = new Asset2Thumbnail();

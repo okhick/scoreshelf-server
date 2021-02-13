@@ -5,7 +5,9 @@
   "main": "server.js",
   "nodemonConfig": {
     "watch": [
-      "./*"
+      "server.ts",
+      "./modules/*",
+      "./config/*"
     ],
     "exec": "node -r tsconfig-paths/register -r ts-node/register ./server.ts",
     "ext": "ts, js"

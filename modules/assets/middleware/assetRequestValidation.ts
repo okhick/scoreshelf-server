@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { AssetMetadata } from '../@types';
 import ApiError from 'error/ApiError';
+import mongoose from 'mongoose';
 
 export default {
   uploadAssets: function (req: Request, res: Response, next: NextFunction) {
@@ -75,6 +76,53 @@ export default {
       return;
     }
 
+    next();
+  },
+
+  updateAssetMetadata: function (req: Request, res: Response, next: NextFunction) {
+    const request = req.body;
+
+    if (
+      typeof request.sharetribe_listing_id !== 'string' ||
+      typeof request.sharetribe_user_id !== 'string'
+    ) {
+      next(ApiError.badData('IDS SHOULD BE TYPE STRING[]'));
+      return;
+    }
+
+    const metadataIds = Object.keys(request.metadata);
+    if (!request.metadata) {
+      next(ApiError.badData('NEED SOME METADATA'));
+      return;
+    }
+    for (const id of metadataIds) {
+      if (!mongoose.Types.ObjectId.isValid(id)) {
+        next(ApiError.badData('SCORESHELF ID NOT VALID'));
+        return;
+      } else if (typeof request.metadata[id] !== 'object') {
+        next(ApiError.badData('METADATA[ID] SHOULD BE OBJECT'));
+        return;
+      }
+    }
+
+    next();
+  },
+
+  deleteAssets: function (req: Request, res: Response, next: NextFunction) {
+    const request = req.body;
+
+    if (!request.filesToRemove || !Array.isArray(request.filesToRemove)) {
+      next(ApiError.badData('FILESTOREMOVE MUST BE TYPE ASSET[]'));
+      return;
+    }
+
+    // TODO: Validate full Asset type here.
+    for (const file of request.filesToRemove) {
+      if (!file._id || !mongoose.Types.ObjectId.isValid(file._id)) {
+        next(ApiError.badData('FILESTOREMOVE MUST BE TYPE ASSET[]'));
+        return;
+      }
+    }
     next();
   },
 };
