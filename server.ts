@@ -6,17 +6,21 @@ dotenv.config();
 
 const port = 3000;
 const app = Express();
-module.exports = app;
 
+// put all global express middleware here
 import config from './config/express';
-import assets from './modules/assets';
-import auth from './modules/auth';
-import sharetribe from './modules/sharetribe';
-import publisher from './modules/publisher';
+
+// modules exporting a Router instance
+import assets from 'assets/index';
+import auth from 'auth/index';
+import sharetribe from 'sharetribe/index';
+import publisher from 'publisher/index';
 import errorHandler from 'error/errorHandler';
 
 // make sure to load the config before the routes otherwise things can get weird...
 app.use(config);
+
+// then load your Routers
 app.use('/assets', assets);
 app.use('/auth', auth);
 app.use('/sharetribe', sharetribe);

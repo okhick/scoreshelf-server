@@ -1,13 +1,13 @@
-import { AssetDB } from './controllers/asset-db';
+import { AssetDB } from 'assets/controllers/asset-db';
 import { AssetProcessing } from './middleware/asset-processing';
 
 import { Router, Request, Response } from 'express';
 import fileUpload from 'express-fileupload';
-import { Asset, AssetMetadata, AssetDataRequest, UploadProfilePictureRequest } from './@types';
-import { AssetIO } from './controllers/asset-io';
+import { Asset, AssetMetadata, AssetDataRequest, UploadProfilePictureRequest } from 'assets/@types';
+import { AssetIO } from 'assets/controllers/asset-io';
 
-import { verifyToken } from '../auth/middleware/verifyToken';
-import requestValidation from './middleware/assetRequestValidation';
+import { verifyToken } from 'auth/middleware/verifyToken';
+import requestValidation from 'assets/middleware/assetRequestValidation';
 
 const router = Router();
 

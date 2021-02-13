@@ -1,4 +1,4 @@
-import ApiError from './index';
+import ApiError from 'error/ApiError';
 import { Request, Response, NextFunction } from 'express';
 
 export default function errorHandler(

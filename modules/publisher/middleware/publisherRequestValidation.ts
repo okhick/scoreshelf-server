@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import mongoose from 'mongoose';
-import ApiError from '../../error';
+import ApiError from 'error/ApiError';
 
 export default {
   validatePublisher: function (req: Request, res: Response, next: NextFunction) {

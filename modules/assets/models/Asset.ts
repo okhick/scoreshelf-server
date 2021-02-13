@@ -1,5 +1,5 @@
 import mongoose, { Schema, Document } from 'mongoose';
-import { Asset, Thumbnail, ProfilePicture } from '../@types';
+import { Asset, Thumbnail, ProfilePicture } from 'assets/@types';
 
 const thumbnailSchema = new Schema({
   sharetribe_user_id: String,

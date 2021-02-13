@@ -2,7 +2,7 @@ import { fromBase64 } from 'pdf2pic';
 import { existsSync, mkdirSync } from 'fs';
 import { parse } from 'path';
 import { PDFDocument } from 'pdf-lib';
-import { RawThumbnail } from '../@types';
+import { RawThumbnail } from 'assets/@types';
 
 export class Asset2Thumbnail {
   // Some constants
