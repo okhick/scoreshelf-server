@@ -8,5 +8,5 @@ RUN yes | apt-get install graphicsmagick
 RUN yes | apt-get install ghostscript
 
 RUN npm install
-RUN npm run build
+# RUN npm run build
 
