@@ -5,7 +5,7 @@ import { ParsedPath } from 'path';
 // Extend the Mongoose document with Assest things
 export interface GenericAsset {
   sharetribe_user_id: string;
-  sharetribe_listing_id: string;
+  sharetribe_listing_id?: string;
   asset_name: string;
   date_added: Date;
 }
@@ -16,14 +16,31 @@ export interface Asset extends GenericAsset, Document {
   thumbnail_settings?: Thumbnail;
 }
 
+export interface AssetMetadata {
+  sharetribe_listing_id: string;
+  sharetribe_user_id: string;
+  metadata: {
+    [key: string]: {
+      thumbnailSettings: Thumbnail;
+    };
+  };
+}
+
 export interface Thumbnail extends GenericAsset, Document {
   page: number;
+}
+
+export interface ProfilePicture extends GenericAsset, Document {}
+
+export interface UploadProfilePictureRequest {
+  file: UploadedFile;
+  sharetribe_user_id: string;
 }
 
 export interface AssetDataRequest {
   ids: string[];
   getLink: boolean;
-  getType: 'asset' | 'thumbnail';
+  getType: 'asset' | 'thumbnail' | 'profile';
 }
 
 export interface UploadRequest {

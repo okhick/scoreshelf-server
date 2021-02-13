@@ -1,71 +1,78 @@
-import { AssetDB } from './controllers/asset-db';
+import { AssetDB } from 'assets/controllers/asset-db';
 import { AssetProcessing } from './middleware/asset-processing';
 
-import { Application, Request, Response } from 'express';
-import { Asset, AssetDataRequest } from './@types';
-import { AssetIO } from './controllers/asset-io';
+import { Router, Request, Response } from 'express';
+import fileUpload from 'express-fileupload';
+import { Asset, AssetMetadata, AssetDataRequest, UploadProfilePictureRequest } from 'assets/@types';
+import { AssetIO } from 'assets/controllers/asset-io';
 
-import { verifyToken } from '../auth/middleware/verifyToken';
+import { verifyToken } from 'auth/middleware/verifyToken';
+import requestValidation from 'assets/middleware/assetRequestValidation';
 
-module.exports = function (app: Application) {
-  app.post('/uploadAssets', verifyToken, async (req: Request, res: Response) => {
+const router = Router();
+
+router.get('/test', (_: Request, res: Response) => res.json('ASSETS'));
+
+// ============================================================================
+// =============================== Uploaders ==================================
+// ============================================================================
+
+router.post(
+  '/uploadAssets',
+  [verifyToken, requestValidation.uploadAssets],
+  async (req: Request, res: Response) => {
     const assetProcessing = new AssetProcessing();
 
-    const receivedFiles = req.files;
-    const receivedBody = JSON.parse(req.body.assetMetadata);
+    const receivedFiles = <fileUpload.FileArray>req.files;
+    const receivedBody = <AssetMetadata>JSON.parse(req.body.assetMetadata);
 
     const response = await assetProcessing.uploadAssets(receivedFiles, receivedBody);
 
     return res.json(response);
-  });
+  }
+);
 
-  app.delete('/deleteAssets', verifyToken, async (req: Request, res: Response) => {
+router.post(
+  '/uploadProfilePicture',
+  [verifyToken, requestValidation.uploadProfilePicture],
+  async (req: Request, res: Response) => {
     const assetProcessing = new AssetProcessing();
 
-    const receivedBody: Asset[] = req.body.filesToRemove;
-    const deletedFiles: String[] = await assetProcessing.deleteAssets(receivedBody);
+    const receivedFiles = <fileUpload.FileArray>req.files;
+    const receivedBody = JSON.parse(req.body.assetMetadata);
 
-    return res.json(deletedFiles);
-  });
+    const response = await assetProcessing.uploadProfilePicture(receivedFiles, receivedBody);
 
-  app.post('/updateAssetMetadata', verifyToken, async (req: Request, res: Response) => {
-    const assetDb = new AssetDB();
-    const assetProcessing = new AssetProcessing();
-    const request = req.body;
-    // const response = {};
+    return res.json(response);
+  }
+);
 
-    // get all assets related to this listing
-    let assetsToUpdate = <Asset[]>(
-      await assetDb.getAssetDataByListing(request.sharetribe_listing_id)
-    );
-    // update the thumbnail
-    const needThumbnailUpdate = await assetProcessing.checkForNewThumbnail(request, assetsToUpdate);
-    if (needThumbnailUpdate) {
-      const thumbnailUpdate = await assetProcessing.updateThumbnail(request, assetsToUpdate);
-      // update assets and replace assetToUpdate with fresh data
-      assetsToUpdate = await assetDb.updateThumbnailData(assetsToUpdate, thumbnailUpdate);
-    }
+// ============================================================================
+// ================================= Getters ==================================
+// ============================================================================
 
-    // ...do more updating here
-
-    // return full list of assets for this listing for any updating needed
-    return res.json(assetsToUpdate);
-  });
-
-  app.get('/getAssetData', verifyToken, async (req: Request, res: Response) => {
+router.get(
+  '/getAssetData',
+  [verifyToken, requestValidation.getAssetData],
+  async (req: Request, res: Response) => {
     const assetDb = new AssetDB();
     const receivedBody = req.query;
+
     const dataRequest: AssetDataRequest = {
       ids: <string[]>receivedBody.scoreshelf_ids,
-      getLink: JSON.parse(<string>receivedBody.get_link), //convert 'true' to boolean
-      getType: 'asset',
+      getLink: JSON.parse(<string>receivedBody.getLink), //convert 'true' to boolean
+      getType: <'asset' | 'thumbnail' | 'profile'>receivedBody.getType,
     };
 
     const assetData = await assetDb.getAssetData(dataRequest);
     res.json(assetData);
-  });
+  }
+);
 
-  app.get('/getAssetBin', verifyToken, async (req: Request, res: Response) => {
+router.get(
+  '/getAssetBin',
+  [verifyToken, requestValidation.getAssetBin],
+  async (req: Request, res: Response) => {
     const assetDb = new AssetDB();
     const assetIo = new AssetIO();
 
@@ -83,9 +90,13 @@ module.exports = function (app: Application) {
       'Content-Type': 'application/pdf',
     });
     res.end(assetBuffer, 'binary');
-  });
+  }
+);
 
-  app.get('/getThumbnailData', verifyToken, async (req: Request, res: Response) => {
+router.get(
+  '/getThumbnailData',
+  [verifyToken, requestValidation.getThumbnailData],
+  async (req: Request, res: Response) => {
     const assetDb = new AssetDB();
 
     const scoreshelf_ids = <string[]>req.query.scoreshelf_ids;
@@ -96,25 +107,71 @@ module.exports = function (app: Application) {
     };
     const thumbnailData = await assetDb.getAssetData(dataRequest);
     res.json(thumbnailData);
-  });
+  }
+);
 
-  // app.get('/testpdfparse', async (req: Request, res: Response) => {
-  //   const assetProcessing = new Asset2Thumbnail();
+// ============================================================================
+// ================================= Updater ==================================
+// ============================================================================
 
-  //   const pageToConvertAsImage = 5;
-  //   // const PDF = readFileSync('./brickwall.pdf');
-  //   const PDF = readFileSync('./Scott Wollschleger - AMERICAN DREAM_8.4.17 (do not duplicate).pdf');
-  //   const thumbnailFilePath = await assetProcessing.makePdfThumbnail(
-  //     PDF,
-  //     'Scott Wollschleger - AMERICAN DREAM_8.4.17 (do not duplicate).pdf',
-  //     pageToConvertAsImage
-  //   );
+router.post(
+  '/updateAssetMetadata',
+  [verifyToken, requestValidation.updateAssetMetadata],
+  async (req: Request, res: Response) => {
+    const assetDb = new AssetDB();
+    const assetProcessing = new AssetProcessing();
+    const request = req.body;
 
-  //   res.json(thumbnailFilePath);
-  // });
+    // get all assets related to this listing
+    let assetsToUpdate = <Asset[]>(
+      await assetDb.getAssetDataByListing(request.sharetribe_listing_id)
+    );
 
-  // TESTS
-  app.get('/test', (req: Request, res: Response) => {
-    res.json('ASSET MODULE');
-  });
-};
+    // update the thumbnail
+    const needThumbnailUpdate = await assetProcessing.checkForNewThumbnail(request, assetsToUpdate);
+    if (needThumbnailUpdate) {
+      const thumbnailUpdate = await assetProcessing.updateThumbnail(request, assetsToUpdate);
+      // update assets and replace assetToUpdate with fresh data
+      assetsToUpdate = await assetDb.updateThumbnailData(assetsToUpdate, thumbnailUpdate);
+    }
+
+    // ...do more updating here
+
+    // return full list of assets for this listing for any updating needed
+    return res.json(assetsToUpdate);
+  }
+);
+
+// ============================================================================
+// ================================= Deleter ==================================
+// ============================================================================
+
+router.delete(
+  '/deleteAssets',
+  [verifyToken, requestValidation.deleteAssets],
+  async (req: Request, res: Response) => {
+    const assetProcessing = new AssetProcessing();
+
+    const receivedBody: Asset[] = req.body.filesToRemove;
+    const deletedFiles: String[] = await assetProcessing.deleteAssets(receivedBody);
+
+    return res.json(deletedFiles);
+  }
+);
+
+// app.get('/testpdfparse', async (req: Request, res: Response) => {
+//   const assetProcessing = new Asset2Thumbnail();
+
+//   const pageToConvertAsImage = 5;
+//   // const PDF = readFileSync('./brickwall.pdf');
+//   const PDF = readFileSync('./Scott Wollschleger - AMERICAN DREAM_8.4.17 (do not duplicate).pdf');
+//   const thumbnailFilePath = await assetProcessing.makePdfThumbnail(
+//     PDF,
+//     'Scott Wollschleger - AMERICAN DREAM_8.4.17 (do not duplicate).pdf',
+//     pageToConvertAsImage
+//   );
+
+//   res.json(thumbnailFilePath);
+// });
+
+export default router;

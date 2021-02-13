@@ -10,7 +10,7 @@ export interface AuthCode extends Document {
   client_id: string;
   auth_code: string;
   code_challenge: string;
-  expires_at: Date;
+  expires_at: string;
 }
 export interface AuthCodeRequest {
   client_id: string;
@@ -25,7 +25,7 @@ export interface AuthCodeResponse {
 export interface AccessToken extends Document {
   token: string;
   client_id: string;
-  expires_at: Date;
+  expires_at: string;
 }
 export interface AccessTokenRequest {
   client_id: string;

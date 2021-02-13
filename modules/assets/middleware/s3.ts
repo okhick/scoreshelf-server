@@ -1,7 +1,7 @@
 import S3_SDK from 'aws-sdk/clients/s3';
 import { AWSError } from 'aws-sdk/lib/core';
 
-import { UploadParams } from '../@types';
+import { UploadParams } from 'assets/@types';
 import { PromiseResult } from 'aws-sdk/lib/request';
 
 export class S3 {
