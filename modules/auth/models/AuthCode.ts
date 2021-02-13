@@ -1,5 +1,5 @@
 import mongoose, { Schema } from 'mongoose';
-import { AuthCode as IAuthCode } from '../@types';
+import { AuthCode as IAuthCode } from 'auth/@types';
 
 const AuthCodeSchema = new Schema({
   client_id: String,

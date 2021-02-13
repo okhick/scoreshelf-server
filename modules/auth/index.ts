@@ -1,5 +1,8 @@
 import { Request, Response, Router } from 'express';
-import { Auth } from './controllers/auth';
+import { Auth } from 'auth/controllers/auth';
+import requestValidation from 'auth/middleware/authRequestValidation';
+
+import ApiError from 'error/ApiError';
 
 const router = Router();
 
@@ -13,23 +16,37 @@ const router = Router();
 
 router.get('/test', (req: Request, res: Response) => res.json('AUTH'));
 
-router.post('/generateAuthCode', async (req: Request, res: Response) => {
-  const auth = new Auth();
+router.post(
+  '/generateAuthCode',
+  requestValidation.generateAuthCode,
+  async (req: Request, res: Response) => {
+    const auth = new Auth();
 
-  const newAuthCode = await auth.newAuthCode({ ...req.body });
-  res.json(newAuthCode);
-});
+    const newAuthCode = await auth.newAuthCode(req.body);
 
-router.post('/generateAccessToken', async (req: Request, res: Response) => {
-  const auth = new Auth();
+    if (newAuthCode instanceof ApiError) {
+      res.status(newAuthCode.code).json({ message: newAuthCode.message });
+      return;
+    }
 
-  const newAuthToken = await auth.newAccessToken({
-    client_id: req.body.client_id,
-    auth_code: <string>req.headers.authorization,
-    code_verifier: req.body.code_verifier,
-  });
+    res.json(newAuthCode);
+  }
+);
 
-  res.json(newAuthToken);
-});
+router.post(
+  '/generateAccessToken',
+  requestValidation.generateAccessToken,
+  async (req: Request, res: Response) => {
+    const auth = new Auth();
+
+    const newAuthToken = await auth.newAccessToken({
+      client_id: req.body.client_id,
+      auth_code: <string>req.headers.authorization,
+      code_verifier: req.body.code_verifier,
+    });
+
+    res.json(newAuthToken);
+  }
+);
 
 export default router;
