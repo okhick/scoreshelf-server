@@ -13,7 +13,7 @@ export default {
   },
 
   getPublisherData: function (req: Request, res: Response, next: NextFunction) {
-    if (!mongoose.Types.ObjectId.isValid(req.body._id)) {
+    if (!mongoose.Types.ObjectId.isValid(<string>req.query?.id)) {
       next(ApiError.badData('ID NOT VALID'));
       return;
     }
