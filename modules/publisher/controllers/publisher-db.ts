@@ -8,7 +8,7 @@ export class PublisherDB {
     });
   }
 
-  async findPublisher(id: string): Promise<IPublisher> {
+  async findPublisher(id: string): Promise<IPublisher | undefined> {
     return await PublisherModel.findById(id);
   }
 
