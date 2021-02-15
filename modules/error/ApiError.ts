@@ -17,4 +17,8 @@ export default class ApiError {
   static authFailed(message: string) {
     return new ApiError(403, message);
   }
+
+  static publisherError(message: string) {
+    return new ApiError(400, message);
+  }
 }
