@@ -2,10 +2,19 @@ import { PublisherDB } from '../controllers/publisher-db';
 import { IPublisher, NewPublisherRequest, UpdatePublisherRequest } from '../@types';
 
 export class PublisherProcessing {
-  async publisherExists(publisherName: string): Promise<boolean> {
+  async publisherExists(
+    publisherName: string,
+    sharetribeUserId: string | undefined
+  ): Promise<boolean> {
     const publisherDb = new PublisherDB();
     const queryPublishersByName = await publisherDb.findPublisherByName(publisherName.trim());
-    return queryPublishersByName !== null ? true : false;
+
+    // if this user's currently saved publisher is this, good
+    if (queryPublishersByName?.sharetribe_user_id === sharetribeUserId) {
+      return false; // false because we're still going flip then before sending the res. Stupid but works.
+    } else {
+      return queryPublishersByName !== null ? true : false;
+    }
   }
 
   async updatePublisher(newPublisher: UpdatePublisherRequest): Promise<IPublisher | null> {

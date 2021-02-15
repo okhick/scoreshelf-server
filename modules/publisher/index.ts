@@ -1,5 +1,6 @@
 import { Router, Request, Response } from 'express';
 import { PublisherProcessing } from './middleware/publisher-processing';
+import { PublisherDB } from 'publisher/controllers/publisher-db';
 
 import requestValidation from './middleware/publisherRequestValidation';
 
@@ -19,11 +20,22 @@ router.get(
     const receivedBody = req.query;
     const publisherProcessing = new PublisherProcessing();
     const requestedPublisherName = <string>receivedBody.name;
+    const sharetribeUserId = <string | undefined>receivedBody.sharetribe_user_id;
 
-    const isValidPublisher = await publisherProcessing.publisherExists(requestedPublisherName);
+    const isValidPublisher = await publisherProcessing.publisherExists(
+      requestedPublisherName,
+      sharetribeUserId
+    );
     res.json(!isValidPublisher);
   }
 );
+
+router.get('/getPublisherData', async (req: Request, res: Response) => {
+  const publisherDb = new PublisherDB();
+  const id = <string>req.query.id;
+  const publisher = await publisherDb.findPublisher(id);
+  res.json(publisher);
+});
 
 router.post(
   '/addNewPublisher',
