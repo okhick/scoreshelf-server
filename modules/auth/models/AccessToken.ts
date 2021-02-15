@@ -1,5 +1,5 @@
 import mongoose, { Schema } from 'mongoose';
-import { AccessToken as IAccessToken } from '../@types';
+import { AccessToken as IAccessToken } from 'auth/@types';
 
 const accessTokenSchema = new Schema({
   token: String,

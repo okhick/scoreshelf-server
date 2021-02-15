@@ -1,5 +1,5 @@
 import mongoose, { Schema } from 'mongoose';
-import { AuthorizedUser as IAuthorizedUser } from '../@types';
+import { AuthorizedUser as IAuthorizedUser } from 'auth/@types';
 
 const authorizedUserSchema = new Schema({
   username: String,
